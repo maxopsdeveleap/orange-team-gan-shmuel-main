@@ -10,8 +10,8 @@ app = Flask(__name__)
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 LOCAL_REPO_PATH = "/home/andishobash/Desktop/orange-team-gan-shmuel-main"
 SERVICES = ["weight", "billing"]
-EMAIL_SENDER = "your-new-email@outlook.com"   # Replace with your Outlook email
-EMAIL_PASSWORD = "your-outlook-password"      # Your Outlook password
+EMAIL_SENDER = "orange_team_gan_shmuel@hotmail.com"   # Replace with your Outlook email
+EMAIL_PASSWORD = "maxops123"      # Your Outlook password
 
 
 @app.route('/webhook', methods=['POST'])
