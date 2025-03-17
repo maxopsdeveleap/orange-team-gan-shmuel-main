@@ -90,29 +90,5 @@ def update_provider(provider_id):
         connection.close()
 
 
-
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
-import mysql.connector
-import os
-
-def connect():
-  connection = None
-  try:
-    connection = mysql.connector.connect(
-      host=os.environ.get('MYSQL_HOST', 'localhost'),
-      port=3306,
-      user=os.environ.get('MYSQL_USER', 'root'),
-      password=os.environ.get('MYSQL_PASSWORD', 'rootpassword'),
-      database="billdb"
-    )
-    print("MySQL Database connection successful")
-  except mysql.connector.Error as err:
-    raise
-    print(f"Error: '{err}'")
-
-  return connection
-
-connect()
