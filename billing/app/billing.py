@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from mysqlbilling import connect
+import os
 
 app = Flask(__name__)
 
@@ -91,4 +92,4 @@ def update_provider(provider_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=os.environ.get("FLASK_PORT", 5000))
