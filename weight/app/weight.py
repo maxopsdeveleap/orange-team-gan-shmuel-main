@@ -333,7 +333,7 @@ def weight():
         cursor = connection.cursor(dictionary=True)
 
         query = """
-                SELECT id, truck, bruto, truckTara, neto
+                SELECT id, direction, bruto, neto, produce, containers
                 FROM transactions
                 WHERE direction IN ({})
                 AND datetime BETWEEN %s AND %s
@@ -343,6 +343,11 @@ def weight():
         cursor.execute(
             query, (*filterList, paramFromFormatted, paramToFormatted))
         transactions = cursor.fetchall()
+
+        # Convert `containers` column from string to list
+        for transaction in transactions:
+            if transaction["containers"]:  # Ensure it's not None
+                transaction["containers"] = transaction["containers"].split(",")
 
         cursor.close()
         connection.close()
