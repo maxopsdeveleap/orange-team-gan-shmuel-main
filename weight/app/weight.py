@@ -1,14 +1,17 @@
 from flask import Flask, render_template, request, jsonify
-import json
 from datetime import datetime
 import mysqlweight  # database connection module
 import time  # Add this for the sleep function in retry logic
 import mysql.connector
 import os
+import csv
 import json
 import time
+import io
 
 app = Flask(__name__)
+UPLOAD_FOLDER = "./in"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 sessions_data = [
     {
@@ -64,8 +67,8 @@ def health():
 def handle_weight_in(cursor, connection, data, direction, truck, containers, produce):
     # Check for existing recent transaction for this truck/direction
     existing_query = """
-    SELECT id FROM transactions 
-    WHERE truck = %s AND direction = %s 
+    SELECT id FROM transactions
+    WHERE truck = %s AND direction = %s
     ORDER BY datetime DESC LIMIT 1
     """
     cursor.execute(existing_query, (truck, direction))
@@ -86,8 +89,8 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers, pro
         # Insert truck transaction
         if truck != 'na':
             query = """
-            INSERT INTO transactions 
-            (datetime, direction, truck, containers, bruto, produce) 
+            INSERT INTO transactions
+            (datetime, direction, truck, containers, bruto, produce)
             VALUES (%s, %s, %s, %s, %s, %s)
             """
             values = (now, direction, truck, containers, weight, produce)
@@ -113,8 +116,8 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers, pro
 
             for container in containers:
                 container_query = """
-                INSERT INTO containers_registered 
-                (container_id, weight, unit) 
+                INSERT INTO containers_registered
+                (container_id, weight, unit)
                 VALUES (%s, %s, %s)
                 """
                 cursor.execute(container_query, (container, weight, unit))
@@ -139,10 +142,10 @@ def handle_weight_out(cursor, connection, data, truck, containers):
 
     # Find the most recent entry for this truck
     find_entry_query = """
-    SELECT id, truck, bruto 
-    FROM transactions 
-    WHERE truck = %s AND direction = 'in' 
-    ORDER BY datetime DESC 
+    SELECT id, truck, bruto
+    FROM transactions
+    WHERE truck = %s AND direction = 'in'
+    ORDER BY datetime DESC
     LIMIT 1
     """
     cursor.execute(find_entry_query, (truck))
@@ -188,8 +191,9 @@ def handle_weight_out(cursor, connection, data, truck, containers):
 
         # Insert out transaction
         query = """
-        INSERT INTO transactions 
-        (datetime, direction, truck, bruto, truckTara, neto, containers, unit, produce) 
+        INSERT INTO transactions
+        (datetime, direction, truck, bruto,
+         truckTara, neto, containers, unit, produce)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
@@ -244,6 +248,12 @@ def create_connection_with_retry(max_retries=3, retry_delay=2):
     # If we get here, all retries failed
     print(f"All {max_retries} connection attempts failed. Last error: {last_error}")
     return None
+
+
+def convert_to_kg(weight, unit="lbs"):
+    if unit.lower() == "lbs":
+        return weight * 0.453592
+    return weight
 
 # http://localhost:5000/item/truck1?from=20230301000000&to=20230302235959
 
@@ -396,8 +406,55 @@ def record_weight_transaction():
         return jsonify({"error": str(e)}), 500
 
 
-# app.route("/batch-weight", methods=["POST"])
-# def batch_weight():
+#  curl -X POST http://localhost:5000/batch-weight
+@app.route("/batch-weight", methods=["POST"])
+def batch_weight():
+    upload_folder = "./in"
+
+    files = os.listdir(upload_folder)
+    containers = []
+
+    for file_name in files:
+        file_path = os.path.join(upload_folder, file_name)
+
+        if os.path.isfile(file_path):
+            if file_name.endswith('.csv'):
+                with open(file_path, 'r', encoding='utf-8') as csvfile:
+                    reader = csv.reader(csvfile)
+                    header = next(reader)
+                    unit = "kg" if "kg" in header[1].lower() else "lbs"
+                    for row in reader:
+                        if len(row) == 2:
+                            container_id, weight = row
+                            containers.append(
+                                (container_id, weight, unit))
+
+            elif file_name.endswith('.json'):
+                with open(file_path, 'r', encoding='utf-8') as jsonfile:
+                    data = json.load(jsonfile)
+                    for entry in data:
+                        containers.append(
+                            (entry["id"], int(entry["weight"]), entry["unit"]))
+
+            else:
+                return jsonify({"error": f"Unsupported file format: {file_name}"}), 400
+
+    if not containers:
+        return jsonify({"error": "No valid files found"}), 400
+
+    connection = create_connection_with_retry()
+    if not connection:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = connection.cursor(dictionary=True)
+    query = "INSERT INTO containers_registered (container_id, weight, unit) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE weight=VALUES(weight), unit=VALUES(unit)"
+    cursor.executemany(query, containers)
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return jsonify({"message": "Batch weight uploaded successfully", "count": len(containers)})
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
