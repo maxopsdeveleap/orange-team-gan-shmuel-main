@@ -20,7 +20,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: weight
+      MYSQL_DATABASE: weight_db
       MYSQL_USER: your_mysql_user
       MYSQL_PASSWORD: your_mysql_password
     volumes:
