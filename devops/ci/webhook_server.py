@@ -10,8 +10,8 @@ app = Flask(__name__)
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 LOCAL_REPO_PATH = "/home/andishobash/Desktop/orange-team-gan-shmuel-main"
 SERVICES = ["weight", "billing"]
-EMAIL_SENDER = "orange-team.ci@gmail.com"         # App email (dedicated)
-EMAIL_PASSWORD = "your_gmail_app_password"        # Gmail App Password for the app account
+EMAIL_SENDER = "your-new-email@outlook.com"   # Replace with your Outlook email
+EMAIL_PASSWORD = "your-outlook-password"      # Your Outlook password
 
 
 @app.route('/webhook', methods=['POST'])
@@ -25,7 +25,7 @@ def github_webhook():
 
         # Extract real developer name and email from head_commit
         pusher_name = payload.get("head_commit", {}).get("author", {}).get("name", "Unknown User")
-        pusher_email = payload.get("head_commit", {}).get("author", {}).get("email", "team.notify@gmail.com")  # Fallback to team if missing
+        pusher_email = payload.get("head_commit", {}).get("author", {}).get("email", "team.notify@outlook.com")  # Fallback if missing
 
         print(f"🔹 Push detected on branch: {branch} by {pusher_name} ({pusher_email})")
 
@@ -76,7 +76,7 @@ def run_ci_pipeline(branch):
 
     # Placeholder for E2E tests
     print("✅ Running E2E tests (placeholder)...")
-    # TODO: Add real tests here
+    # TODO: Add real tests here later
 
     for service in SERVICES:
         service_path = os.path.join(LOCAL_REPO_PATH, service)
@@ -93,9 +93,13 @@ def send_email(subject, body, receiver):
     msg["From"] = EMAIL_SENDER
     msg["To"] = receiver
 
-    print(f"📧 Sending email to {receiver}...")
+    print(f"📧 Sending email to {receiver} via Outlook...")
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+    # Connect to Outlook SMTP server with STARTTLS
+    with smtplib.SMTP('smtp.office365.com', 587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()  # Secure connection
+        smtp.ehlo()
         smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
         smtp.send_message(msg)
 
