@@ -40,8 +40,79 @@ def create_provider():
     finally:
          cursor.close()
          connection.close()
+
+
+@app.route('/provider/<string:provider_id>', methods=['PUT'])
+def update_provider(provider_id):    
+    try:
+        provider_id = int(provider_id)  # Ensure it's an integer
+    except ValueError:
+        return jsonify({"error": "Invalid provider ID - ID requires numbers only"}), 400  # Return a 400 Bad Request if it's not a valid integer
+
+    data = request.get_json()
+
+    # Input validation
+    if not data or 'name' not in data:
+        return jsonify({"error": "Provider name is required"}), 400
+
+    new_name = data['name']
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+        existing_provider = cursor.fetchone()
         
+        if not existing_provider:
+            return jsonify({"error": "Provider not found"}), 404
+
+        # Check if the new name is unique (excluding the current provider)
+        cursor.execute("SELECT id FROM Provider WHERE name = %s AND id != %s", (new_name, provider_id))
+        duplicate_provider = cursor.fetchone()
+        
+        if duplicate_provider:
+            return jsonify({"error": "Provider name must be unique"}), 409
+
+        # Update the provider's name
+        cursor.execute("UPDATE Provider SET name = %s WHERE id = %s", (new_name, provider_id))
+        connection.commit()
+
+        return jsonify({"message": "Provider updated successfully"}), 200
+
+    except Exception as e:
+        # Log the error for debugging
+        app.logger.error(f"Error updating provider: {e}")
+        return jsonify({"error": "Failed to update provider"}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+
+import mysql.connector
+import os
+
+def connect():
+  connection = None
+  try:
+    connection = mysql.connector.connect(
+      host=os.environ.get('MYSQL_HOST', 'localhost'),
+      port=3306,
+      user=os.environ.get('MYSQL_USER', 'root'),
+      password=os.environ.get('MYSQL_PASSWORD', 'rootpassword'),
+      database="billdb"
+    )
+    print("MySQL Database connection successful")
+  except mysql.connector.Error as err:
+    raise
+    print(f"Error: '{err}'")
+
+  return connection
+
+connect()
