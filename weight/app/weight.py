@@ -7,6 +7,7 @@ import mysql.connector
 import os
 import json
 import time
+import csv
 
 app = Flask(__name__)
 
@@ -395,6 +396,64 @@ def record_weight_transaction():
         finally:
             cursor.close()
             connection.close()
+
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/batch-weight", methods=["POST"])
+def batch_weight():
+    file = request.get_json().get("file")
+    filePath = f"/in/{file}"
+    try:
+
+        data = []
+        json = []
+
+        with open(filePath, newline="") as csvfile:
+
+            reader = csv.reader(csvfile)
+        
+            # Read the header row
+            header = next(reader)  # First row contains column names
+            unit = header[1]  # Get the unit from the second column name (e.g., "kg" or "lbs")
+
+            # Reinitialize reader to read data rows as dictionaries
+            csvfile.seek(0)  # Reset file pointer to beginning
+
+
+            reader = csv.DictReader(csvfile)  # Reads CSV as a dictionary
+            for row in reader:
+                
+                container_id = row["id"]
+                weight = float(row[unit])  # Convert to float
+
+                data.append((container_id, weight, unit))  # Always store weight in KG
+                json.append({"id": container_id, "weight": weight, "unit": unit})
+
+
+        # SQL for batch insert
+        query = """
+            INSERT INTO containers_registered (container_id, weight, unit) 
+            VALUES (%s, %s, %s)
+        """
+
+        connection = mysqlweight.connect()
+        cursor = connection.cursor()
+        cursor.executemany(query, data)  # Bulk Insert
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+
+        return jsonify(json), 201 
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    except FileNotFoundError:
+        return jsonify({"error": "file not found."}), 400
 
     except Exception as e:
         print(f"Error processing request: {e}")
