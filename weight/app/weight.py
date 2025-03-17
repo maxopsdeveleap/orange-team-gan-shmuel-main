@@ -11,6 +11,12 @@ app = Flask(__name__)
 def health():
     return jsonify({"OK": "app running."}), 200
 
+@app.route("/api/weight", methods=["GET","POST"])
+def weight():
+    if request.method == "GET":
+        return jsonify([{"id": "example"},{"id": "example2"}]), 200
+    elif request.method == "POST":
+        return jsonify({"not implemented"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
