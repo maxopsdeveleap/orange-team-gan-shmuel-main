@@ -13,6 +13,7 @@ def connect():
     )
     print("MySQL Database connection successful")
   except mysql.connector.Error as err:
+    raise
     print(f"Error: '{err}'")
 
   return connection

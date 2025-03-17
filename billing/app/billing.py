@@ -4,7 +4,13 @@ from mysqlbilling import connect
 app = Flask(__name__)
 
 
-# @app.route('/', methods=[''])
+@app.route('/health', methods=['GET'])
+def health_check():
+        try:
+            connect()
+            return 'OK', 200
+        except:
+            return 'Failure', 500
 
 
 if __name__ == '__main__':
