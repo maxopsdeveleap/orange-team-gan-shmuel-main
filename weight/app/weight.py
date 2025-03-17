@@ -14,7 +14,16 @@ def health():
 @app.route("/api/weight", methods=["GET","POST"])
 def weight():
     if request.method == "GET":
-        return jsonify([{"id": "example"},{"id": "example2"}]), 200
+
+        # Get parameters from the URL
+        paramFrom = request.args.get("from")
+        paramTo = request.args.get("to")
+        paramFilter = request.args.get("filter","in,out,none")
+
+        return jsonify([{"from":paramFrom},{"to":paramTo},{"filter":paramFilter}])
+
+        #return jsonify([{"id": "example"},{"id": "example2"}]), 200
+
     elif request.method == "POST":
         return jsonify({"not implemented"}), 200
 
