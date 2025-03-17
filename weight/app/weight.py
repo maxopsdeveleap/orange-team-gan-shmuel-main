@@ -323,15 +323,15 @@ def weight():
 
         paramFilter = request.args.get("filter","in,out,none")
 
-        return jsonify({
-            "from":paramFromFormatted,
-            "to":paramToFormatted,
-            "filter":paramFilter}), 200
+        # return jsonify({
+        #     "from":paramFromFormatted,
+        #     "to":paramToFormatted,
+        #     "filter":paramFilter}), 200
 
         filterList = tuple(paramFilter.split(","))
 
         try:
-            connection = connect()
+            connection = mysqlweight.connect()
             cursor = connection.cursor(dictionary=True)  # Enables fetching rows as dictionaries
             
             query = """
