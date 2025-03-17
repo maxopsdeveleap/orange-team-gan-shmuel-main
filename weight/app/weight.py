@@ -57,7 +57,6 @@ def health():
     return jsonify({"OK": "app running."}), 200
 
 # New weight transaction endpoint
-@app.route("/weight", methods=["POST"])
 def record_weight_transaction():
     try:
         # Get JSON data from the request
@@ -306,9 +305,8 @@ def get_session(id):
     return jsonify(response), 200
 
 
-@app.route("/api/weight", methods=["GET","POST"])
+@app.route("/weight", methods=["GET", "POST"])
 def weight():
-
     # Get:/api/weight?from=t1&to=t2&filter=in,out,none
     if request.method == "GET":
 
@@ -355,11 +353,10 @@ def weight():
 
         except mysql.connector.Error as err:
             return jsonify({"error": str(err)}), 500
-            
-
     elif request.method == "POST":
-        return jsonify({"not implemented"}), 201
+        return record_weight_transaction()
 
+    
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
     # app.run(debug=True, host="0.0.0.0", port="5001")
