@@ -57,187 +57,217 @@ def health():
     return jsonify({"OK": "app running."}), 200
 
 # New weight transaction endpoint
+from datetime import datetime
+import json
+import time
+
 def record_weight_transaction():
     try:
         # Get JSON data from the request
         data = request.get_json()
         
         # Validate required fields
-        required_fields = ['direction', 'truck']
+        required_fields = ['direction', 'weight', 'unit']
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
-        # Create database connection using your existing module
+        # Normalize inputs
+        direction = data['direction'].lower()
+        truck = data.get('truck', 'na')
+        containers = data.get('containers', '').split(',') if data.get('containers') else []
+        force = data.get('force', False)
+        produce = data.get('produce', 'na')
+        
+        # Validate direction
+        valid_directions = ['in', 'out', 'none']
+        if direction not in valid_directions:
+            return jsonify({"error": "Invalid direction. Must be 'in', 'out', or 'none'"}), 400
+        
+        # Create database connection 
         connection = create_connection_with_retry()
         if not connection:
             return jsonify({"error": "Database connection failed"}), 500
         
         cursor = connection.cursor(dictionary=True)
         
-        # Handle different directions
-        if data['direction'].lower() == 'in':
-            # Truck is entering - create new transaction
-            return handle_truck_entry(cursor, connection, data)
-        elif data['direction'].lower() == 'out':
-            # Truck is leaving - update or create transaction
-            return handle_truck_exit(cursor, connection, data)
-        else:
-            return jsonify({"error": "Invalid direction. Must be 'in' or 'out'"}), 400
+        try:
+            # Handle different scenarios based on direction
+            if direction in ['in', 'none']:
+                return handle_weight_in(cursor, connection, data, direction, truck, containers, produce)
+            elif direction == 'out':
+                return handle_weight_out(cursor, connection, data, truck, containers)
+        
+        except Exception as e:
+            connection.rollback()
+            print(f"Error processing transaction: {e}")
+            return jsonify({"error": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
             
     except Exception as e:
         print(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
 
-def handle_truck_entry(cursor, connection, data):
-    try:
-        # Prepare data for new transaction
-        now = datetime.now()
+def handle_weight_in(cursor, connection, data, direction, truck, containers, produce):
+    # Check for existing recent transaction for this truck/direction
+    existing_query = """
+    SELECT id FROM transactions 
+    WHERE truck = %s AND direction = %s 
+    ORDER BY datetime DESC LIMIT 1
+    """
+    cursor.execute(existing_query, (truck, direction))
+    existing_record = cursor.fetchone()
+    
+    # Handle force flag for repeated transactions
+    force = data.get('force', False)
+    if existing_record and not force:
+        return jsonify({"error": "Transaction already exists. Use force=true to overwrite."}), 400
+    
+    # Prepare transaction data
+    now = datetime.now()
+    weight = data['weight']
+    unit = data['unit']
+    
+    # Handle different scenarios
+    if direction == 'in':
+        # Insert truck transaction
+        if truck != 'na':
+            query = """
+            INSERT INTO transactions 
+            (datetime, direction, truck, bruto, unit, produce) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            values = (now, direction, truck, weight, unit, produce)
+            cursor.execute(query, values)
+            transaction_id = cursor.lastrowid
+            
+            # If containers present, register them
+            if containers:
+                for container in containers:
+                    container_query = """
+                    INSERT INTO containers_registered 
+                    (container_id, truck, datetime) 
+                    VALUES (%s, %s, %s)
+                    """
+                    cursor.execute(container_query, (container, truck, now))
         
-        # Convert containers list to JSON string if present
-        containers_json = json.dumps(data.get('containers', [])) if 'containers' in data else None
-        
-        # Insert new transaction
-        query = """
-        INSERT INTO transactions 
-        (datetime, direction, truck, containers, bruto, produce) 
-        VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        
-        values = (
-            now,
-            data['direction'],
-            data['truck'],
-            containers_json,
-            data.get('bruto'),
-            data.get('produce')
-        )
-        
-        cursor.execute(query, values)
-        connection.commit()
-        
-        # Get the ID of the newly created transaction
-        transaction_id = cursor.lastrowid
-        
-        # Prepare and return response
-        response = {
-            "id": transaction_id,
-            "truck": data['truck'],
-            "bruto": data.get('bruto'),
-            "datetime": now.strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        return jsonify(response), 201
-        
-    except Exception as e:
-        connection.rollback()
-        raise e
-    finally:
-        cursor.close()
-        connection.close()
+        # Handle standalone container for 'none' direction
+        elif direction == 'none':
+            if not containers:
+                return jsonify({"error": "No containers specified for 'none' direction"}), 400
+            
+            for container in containers:
+                container_query = """
+                INSERT INTO containers_registered 
+                (container_id, weight, unit, datetime) 
+                VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(container_query, (container, weight, unit, now))
+            transaction_id = None  # No truck transaction
+    
+    connection.commit()
+    
+    # Prepare response
+    response = {
+        "id": transaction_id,
+        "truck": truck,
+        "bruto": weight
+    }
+    
+    return jsonify(response), 201
 
-def handle_truck_exit(cursor, connection, data):
-    try:
-        # Find the most recent entry for this truck
-        find_entry_query = """
-        SELECT id, containers, bruto 
-        FROM transactions 
-        WHERE truck = %s AND direction = 'in' 
-        ORDER BY datetime DESC 
-        LIMIT 1
-        """
-        
-        cursor.execute(find_entry_query, (data['truck'],))
-        entry_record = cursor.fetchone()
-        
-        if not entry_record:
-            return jsonify({"error": f"No entry record found for truck {data['truck']}"}), 404
-        
-        # Get truck tara weight
-        truck_tara = data.get('truckTara')
-        if not truck_tara:
-            return jsonify({"error": "Missing truckTara weight for exit transaction"}), 400
-        
-        # Calculate neto weight based on containers
-        neto = None
-        containers_json = data.get('containers')
-        
-        if containers_json:
-            containers = json.loads(containers_json) if isinstance(containers_json, str) else containers_json
+def handle_weight_out(cursor, connection, data, truck, containers):
+    # Validate truck and containers
+    if truck == 'na' and not containers:
+        return jsonify({"error": "Must specify either truck or containers"}), 400
+    
+    # Find the most recent entry for this truck
+    find_entry_query = """
+    SELECT id, truck, bruto 
+    FROM transactions 
+    WHERE truck = %s AND direction = 'in' 
+    ORDER BY datetime DESC 
+    LIMIT 1
+    """
+    cursor.execute(find_entry_query, (truck,))
+    entry_record = cursor.fetchone()
+    
+    # Validate entry record exists
+    if truck != 'na' and not entry_record:
+        return jsonify({"error": f"No entry record found for truck {truck}"}), 404
+    
+    # Calculate container weights
+    total_container_tara = 0
+    if containers:
+        for container in containers:
+            # Fetch container weight from registered containers
+            container_query = "SELECT weight FROM containers_registered WHERE container_id = %s"
+            cursor.execute(container_query, (container,))
+            container_record = cursor.fetchone()
             
-            # Check if we have weights for all containers
-            all_containers_known = True
-            containers_weight = 0
+            if not container_record:
+                return jsonify({"error": f"Container {container} not registered"}), 404
             
-            for container_id in containers:
-                # Get container weight from database
-                container_query = "SELECT weight FROM containers_registered WHERE container_id = %s"
-                cursor.execute(container_query, (container_id,))
-                container = cursor.fetchone()
-                
-                if not container:
-                    all_containers_known = False
-                    break
-                
-                containers_weight += container['weight']
-            
-            # Calculate neto if all containers are known
-            if all_containers_known:
-                neto = data.get('bruto') - truck_tara - containers_weight
-            else:
-                neto = "na"  # As specified in your schema comment
-        else:
-            # If no containers specified, just use bruto minus truckTara
-            neto = data.get('bruto') - truck_tara
+            total_container_tara += container_record['weight']
+    
+    # Prepare out transaction
+    now = datetime.now()
+    out_weight = data['weight']
+    
+    # Calculate neto
+    if truck != 'na':
+        # Use current out_weight as truck tara
+        truck_tara = out_weight
         
-        # Create a new record for the exit transaction
-        now = datetime.now()
+        # Use previous entry's bruto as the entry weight
+        entry_bruto = entry_record['bruto']
         
-        # Convert containers list to JSON string if present
-        containers_json = json.dumps(data.get('containers', [])) if 'containers' in data else None
+        # Calculate neto
+        neto = entry_bruto - truck_tara - total_container_tara
         
-        # Insert the exit record
+        # Handle case where not all container weights are known
+        if total_container_tara == 0:
+            neto = "na"
+        
+        # Insert out transaction
         query = """
         INSERT INTO transactions 
-        (datetime, direction, truck, containers, bruto, truckTara, neto) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (datetime, direction, truck, bruto, truckTara, neto, containers, unit, produce) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        
         values = (
-            now,
-            data['direction'],
-            data['truck'],
-            containers_json,
-            data.get('bruto'),
-            truck_tara,
-            neto if neto != "na" else None  # Store as NULL in database if "na"
+            now, 
+            'out', 
+            truck, 
+            out_weight,
+            truck_tara,  # truck tara from current out weight
+            neto if neto != "na" else None, 
+            json.dumps(containers) if containers else None,
+            data['unit'],  # include the unit
+            data.get('produce', 'na')  # include produce, defaulting to 'na'
         )
-        
         cursor.execute(query, values)
-        connection.commit()
-        
-        # Get the ID of the exit transaction
         transaction_id = cursor.lastrowid
         
-        # Prepare and return response
+        # Prepare response
         response = {
             "id": transaction_id,
-            "truck": data['truck'],
-            "bruto": data.get('bruto'),
+            "truck": truck,
+            "bruto": entry_bruto,
             "truckTara": truck_tara,
-            "neto": neto,
-            "datetime": now.strftime("%Y-%m-%d %H:%M:%S")
+            "neto": neto
         }
-        
-        return jsonify(response), 201
-        
-    except Exception as e:
-        connection.rollback()
-        raise e
-    finally:
-        cursor.close()
-        connection.close()
-
+    else:
+        # Handle standalone container out transaction
+        response = {
+            "truck": "na",
+            "bruto": out_weight
+        }
+    
+    connection.commit()
+    return jsonify(response), 201
 
 def create_connection_with_retry(max_retries=3, retry_delay=2):
     """Attempt to connect to the database with retries"""
