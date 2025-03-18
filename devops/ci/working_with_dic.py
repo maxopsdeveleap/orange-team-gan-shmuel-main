@@ -38,6 +38,37 @@ SMTP_PORT = 587
 
 
 
+# Predefined Developer Dictionary
+
+DEVELOPERS = {
+
+    "edi1215": {"name": "Edi Shmuel", "email": "edi.shmuel@example.com"},
+
+    "maxopsdeveleap": {"name": "Max Developer", "email": "maxstru3@gmail.com"},
+
+    "ShobashAndi": {"name": "Andi Shobash", "email": "andishubash@gmail.com"},
+
+    "Carmel-Amarilio": {"name": "carmel", "email": "Amarilio.Carmel@gmail.com"},
+
+    "dor-solomon": {"name": "Dor Solomon", "email": "Dor@0ds.org"},
+    
+    "danitish": {"name": "Daniel tsh", "email": "Dor@0ds.org"},
+
+    "itaytzdaka": {"name": "Itay zdaka", "email": "itaytzdaka1@gmail.com"}
+
+    
+
+}
+
+
+
+def get_developer_email(username):
+
+    """Retrieve developer email from predefined dictionary."""
+
+    return DEVELOPERS.get(username, {}).get("email", "team.notify@zohomail.com")
+
+
 
 @app.route('/webhook', methods=['POST'])
 
@@ -59,15 +90,9 @@ def github_webhook():
 
             branch = payload["pull_request"]["base"]["ref"]
 
-            commit_id = payload["head"]["user"]["sha"]
+            github_username = payload["head"]["user"]["sha"]
 
-            github_username = "user"
-
-            subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
-
-            developer_email = "test@gmail.com"
-
-
+            developer_email = get_developer_email(github_username)
 
 
 
