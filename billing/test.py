@@ -20,11 +20,11 @@ try:
     whole_line = cursor.fetchall()
     for i in whole_line:
         print(i[0], i[1])
-except Exception as e:
-    print(f"Test failed with exception: {e}")
-finally:
     cursor.close()
     connection.close()
+except Exception as e:
+    print(f"Test failed with exception: {e}")
+    
 
 
 try:
@@ -41,8 +41,20 @@ try:
     whole_line = cursor.fetchall()
     for i in whole_line:
         print(i[0], i[1])
-except Exception as e:
-    print(f"Test failed with exception: {e}")
-finally:
     cursor.close()
     connection.close()
+except Exception as e:
+    print(f"Test failed with exception: {e}")
+
+def test_health_check():
+    response = requests.get(f"{link}/health")
+    try:
+        assert response.status_code == 20
+    except AssertionError as e:
+        print(f"AssertionError-HealthStatusCode")
+    try:
+        assert response.text == "OK"
+    except AssertionError as e:
+        print(f"AssertionError-HealthResponse")
+
+test_health_check()
