@@ -98,11 +98,11 @@ def register_truck():
     data = request.get_json()
 
     # Validate input
-    if not data or 'provider_id' not in data or 'truck_id' not in data:
+    if not data or 'provider_id' not in data or 'id' not in data:
         return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
 
     provider_id = data['provider_id']  # Provider's ID
-    license_number = data['truck_id']  # Truck's license plate (truck_id)
+    license_number = data['id']  # Truck's license plate (truck_id)
 
     connection = None
     cursor = None
@@ -120,23 +120,22 @@ def register_truck():
             return jsonify({"error": "Provider not found"}), 404
 
         # Check if the truck already exists
-        cursor.execute("SELECT * FROM trucks WHERE truck_id = %s", (license_number,))
+        cursor.execute("SELECT * FROM Trucks WHERE id = %s", (license_number,))
         existing_truck = cursor.fetchone()
 
         if existing_truck:
             return jsonify({"error": "Truck already exists"}), 409
 
         # Insert the truck into the database
-        cursor.execute("INSERT INTO trucks (truck_id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
+        cursor.execute("INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
         connection.commit()
 
         # Return success response
-        return jsonify({"message": "Truck registered successfully", "truck_id": license_number}), 201
+        return jsonify({"message": "Truck registered successfully", "id": license_number}), 201
 
     except Exception as e:
-        # Log the error for debugging
-        app.logger.error(f"Error registering truck: {e}")
-        return jsonify({"error": "Failed to register truck"}), 500
+        print(f"Error updating provider: {e}")
+        return jsonify({"error": f"Failed to update provider: {str(e)}"}), 500
 
     finally:
         # Close the cursor and connection
