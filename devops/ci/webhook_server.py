@@ -22,13 +22,15 @@ LOCAL_REPO_PATH = "/home/max/Desktop/tasks_develeap/orange_team/orange_repo/oran
 
 SERVICES = ["weight", "billing"]
 
+ZOHO_EMAIL_PASSWORD = "Maxops1313!"
+
 
 
 # Zoho Mail Configuration
 
 EMAIL_SENDER = "orange.team.ci@zohomail.com"
 
-EMAIL_PASSWORD = os.getenv("ZOHO_EMAIL_PASSWORD")  # Securely read from environment variable
+EMAIL_PASSWORD = ZOHO_EMAIL_PASSWORD  # Securely read from environment variable
 
 SMTP_SERVER = "smtp.zoho.com"
 
@@ -42,9 +44,13 @@ DEVELOPERS = {
 
     "edi1215": {"name": "Edi Shmuel", "email": "edi.shmuel@example.com"},
 
-    "maxopsdeveleap": {"name": "Max Developer", "email": "max.developer@example.com"},
+    "maxopsdeveleap": {"name": "Max Developer", "email": "maxstru3@gmail.com"},
 
-    "johnsmith": {"name": "John Smith", "email": "john.smith@example.com"},
+    "ShobashAndi": {"name": "Andi Shobash", "email": "andishubash@gmail.com"},
+
+    "carmel": {"name": "carmel", "email": "Amarilio.Carmel@gmail.com"},
+
+    "dor": {"name": "Andi Shobash", "email": "Dor@0ds.org"}
 
 }
 
