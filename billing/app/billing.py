@@ -101,14 +101,14 @@ def update_truck(id):
    cursor = connection.cursor()
 
    try:
-       cursor.execute("SELECT id FROM Truck WHERE id = %s", (id,))
+       cursor.execute("SELECT id FROM Trucks WHERE id = %s", (id,))
        if not cursor.fetchone():
            return jsonify({"error": "No matching truck found"}),404
        cursor.execute("SELECT id FROM Provider WHERE id = %s", (new_provider_id,))
        if not cursor.fetchone():
            return jsonify({"error": "Invalid provider ID"}), 400
        
-       cursor.execute("UPDATE Truck SET provider_id = %s WHERE id = %s", (new_provider_id, id))
+       cursor.execute("UPDATE Trucks SET provider_id = %s WHERE id = %s", (new_provider_id, id))
        connection.commit()
 
        return jsonify({"message": "Truck updated successfully"}), 200
