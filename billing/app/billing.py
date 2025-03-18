@@ -91,5 +91,61 @@ def update_provider(provider_id):
         connection.close()
 
 
+# POST /truck - Register a truck
+@app.route('/truck', methods=['POST'])
+def register_truck():
+    # Get JSON data from the request
+    data = request.get_json()
+
+    # Validate input
+    if not data or 'provider_id' not in data or 'truck_id' not in data:
+        return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
+
+    provider_id = data['provider_id']  # Provider's ID
+    license_number = data['truck_id']  # Truck's license plate (truck_id)
+
+    conn = None
+    cursor = None
+
+    try:
+        # Establish a database connection
+        connection = connect()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check if the provider exists
+        cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+        provider = cursor.fetchone()
+
+        if not provider:
+            return jsonify({"error": "Provider not found"}), 404
+
+        # Check if the truck already exists
+        cursor.execute("SELECT * FROM trucks WHERE truck_id = %s", (license_number,))
+        existing_truck = cursor.fetchone()
+
+        if existing_truck:
+            return jsonify({"error": "Truck already exists"}), 409
+
+        # Insert the truck into the database
+        cursor.execute("INSERT INTO trucks (truck_id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
+        conn.commit()
+
+        # Return success response
+        return jsonify({"message": "Truck registered successfully", "truck_id": license_number}), 201
+
+    except Exception as e:
+        # Log the error for debugging
+        app.logger.error(f"Error registering truck: {e}")
+        return jsonify({"error": "Failed to register truck"}), 500
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=os.environ.get("FLASK_PORT", 5000))
