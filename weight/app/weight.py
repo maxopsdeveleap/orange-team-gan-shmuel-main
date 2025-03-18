@@ -300,7 +300,7 @@ def get_item(id):
     query = """
         SELECT * FROM transactions 
         WHERE truck = %s 
-        OR FIND_IN_SET(%s, containers)
+        OR JSON_CONTAINS(containers, JSON_QUOTE(%s))
     """
     
     cursor.execute(query, (id, id))
