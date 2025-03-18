@@ -310,11 +310,6 @@ def weight():
 
     paramFilter = request.args.get("filter", "in,out,none")
 
-    # return jsonify({
-    #     "from":paramFromFormatted,
-    #     "to":paramToFormatted,
-    #     "filter":paramFilter}), 200
-
     filterList = tuple(paramFilter.split(","))
 
     try:
@@ -337,7 +332,7 @@ def weight():
         # Convert `containers` column from string to list
         for transaction in transactions:
             if transaction["containers"]:  # Ensure it's not None
-                transaction["containers"] = transaction["containers"].split(",")
+                transaction["containers"] = json.loads(transaction["containers"])
 
         cursor.close()
         connection.close()
