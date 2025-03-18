@@ -96,11 +96,33 @@ curl -X POST http://localhost:5000/weight \
          "produce": "orange"
      }'
 
+curl -X POST http://localhost:5000/weight \
+     -H "Content-Type: application/json" \
+     -d '{
+         "direction": "in",
+         "truck": "truck4",
+         "containers": "GhostContainer",
+         "weight": 12345,
+         "unit": "kg",
+         "force": true,
+         "produce": "orange"
+     }'
 
-# Get a session with ID 1
-echo "Testing GET /session/1..."
-curl -X GET http://localhost:5000/session/1
+curl -X POST http://localhost:5000/weight \
+     -H "Content-Type: application/json" \
+     -d '{
+         "direction": "out",
+        "truck": "truck4",
+        "containers": "GhostContainer",
+         "weight": 12340,
+         "unit": "kg"
+     }'
 
-# Get a non-existent session
-echo -e "\nTesting GET /session/999 (should return 404)..."
-curl -X GET http://localhost:5000/session/999
+
+# # Get a session with ID 1
+# echo "Testing GET /session/1..."
+# curl -X GET http://localhost:5000/session/1
+
+# # Get a non-existent session
+# echo -e "\nTesting GET /session/999 (should return 404)..."
+# curl -X GET http://localhost:5000/session/999
