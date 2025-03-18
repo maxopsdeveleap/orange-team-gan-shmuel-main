@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify, send_file
 from mysqlbilling import connect
+import requests
+from datetime import datetime
+import logging
 import os
+
 
 app = Flask(__name__)
 
@@ -145,10 +149,10 @@ def register_truck():
 
     # Validate input
     if not data or 'provider_id' not in data or 'id' not in data:
-        return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
+        return jsonify({"error": "Missing required fields: 'provider_id' and 'id'"}), 400
 
     provider_id = data['provider_id']  # Provider's ID
-    license_number = data['id']  # Truck's license plate (truck_id)
+    license_number = data['id']  # Truck's license plate (id)
 
     connection = None
     cursor = None
@@ -189,6 +193,78 @@ def register_truck():
             cursor.close()
         if connection:
             connection.close()
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.route('/truck/<id>', methods=['GET'])
+def get_truck_info(id):
+
+    logger.info(f"Getting information for truck: {id}")
+
+    # Get query parameters with defaults
+    from_date = request.args.get('from', None)
+    to_date = request.args.get('to', None)
+
+    # Set default values if not provided
+    now = datetime.now()
+    if not from_date:
+        # Default is 1st of current month at 000000
+        from_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y%m%d%H%M%S")
+        logger.info(f"Using default from_date: {from_date}")
+
+    if not to_date:
+        # Default is now
+        to_date = now.strftime("%Y%m%d%H%M%S")
+        logger.info(f"Using default to_date: {to_date}")
+
+    try:
+        # Validate the date format
+        datetime.strptime(from_date, "%Y%m%d%H%M%S")
+        datetime.strptime(to_date, "%Y%m%d%H%M%S")
+    except ValueError:
+        logger.error(f"Invalid date format: from_date={from_date}, to_date={to_date}")
+        return jsonify({"error": "Invalid date format. Use yyyymmddhhmmss"}), 400
+
+    try:
+        # Production API URL (configurable via environment variable)
+        production_api_url = os.getenv("PRODUCTION_API_URL", "http://production-api.internal/truck")
+        logger.info(f"Calling production API for truck {id} from {from_date} to {to_date}")
+
+        # Make a request to the production API
+        response = requests.get(
+            f"{production_api_url}/{id}",
+            params={"from": from_date, "to": to_date},
+            timeout=int(os.getenv("REQUEST_TIMEOUT", "10"))  # Configurable timeout
+        )
+
+        # Handle response from production API
+        if response.status_code == 404:
+            logger.warning(f"Truck {id} not found in production database")
+            return jsonify({"error": "Truck not found"}), 404
+
+        if response.status_code != 200:
+            logger.error(f"Production API error: {response.status_code} - {response.text}")
+            return jsonify({"error": "Error retrieving truck information from production"}), 502
+
+        # Validate the response from the production API
+        truck_data = response.json()
+        if not all(key in truck_data for key in ["id", "tara", "sessions"]):
+            logger.error(f"Invalid response from production API: {truck_data}")
+            return jsonify({"error": "Invalid data received from production API"}), 502
+
+        logger.info(f"Successfully retrieved data for truck {id}")
+        return jsonify(truck_data), 200
+
+    except requests.RequestException as e:
+        logger.error(f"Request error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Failed to connect to production API"}), 503
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Failed to process truck information request"}), 500
 
 
 
