@@ -1,0 +1,37 @@
+POST/batch-weight 
+    - curl -X POST http://localhost:5000/batch-weight
+
+POST/weight 
+    curl -X POST http://localhost:5000/weight      -H "Content-Type: application/json"      -d '{
+            "direction": "in",
+            "truck": "text123",
+            "containers": "C-35434 ,K-4109",
+            "weight": 15000,
+            "unit": "kg",
+            "force": false,
+            "produce": "orange"
+        }'
+    curl -X POST http://localhost:5000/weight      -H "Content-Type: application/json"      -d '{
+          "direction": "out",
+          "truck": "text123",
+          "containers": "C-35434 ,K-4109",
+          "weight": 12000,
+          "unit": "kg",
+          "force": false,
+          "produce": "orange"
+     }'
+
+
+GET/health
+    curl -X GET http://localhost:5000/health      -H "Content-Type: application/json"
+
+
+
+
+mysql
+     docker exec -it weight_db bash
+     mysql -u root -prootpassword
+     USE weight
+     SHOW TABLES
+     SELECT * FROM transactions;
+     SELECT * FROM containers_registered;
