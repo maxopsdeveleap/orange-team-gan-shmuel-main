@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Health test"
+curl -X POST http://localhost:5000/health
+
 # Test batch-weight endpoint
 echo "Testing batch-weight endpoint..."
 curl -X POST http://localhost:5000/batch-weight -H "Content-Type: application/json" -d '{"file": "containers1.csv"}'
@@ -92,3 +95,12 @@ curl -X POST http://localhost:5000/weight \
          "unit": "kg",
          "produce": "orange"
      }'
+
+
+# Get a session with ID 1
+echo "Testing GET /session/1..."
+curl -X GET http://localhost:5000/session/1
+
+# Get a non-existent session
+echo -e "\nTesting GET /session/999 (should return 404)..."
+curl -X GET http://localhost:5000/session/999
