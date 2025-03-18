@@ -469,6 +469,30 @@ def batch_weight():
 
     return jsonify({"message": "Batch weight uploaded successfully", "count": len(containers)})
 
+@app.route("/unknown", methods=["GET"])
+def unknown():
+
+    try:
+        connection = mysqlweight.connect()
+        # Enables fetching rows as dictionaries
+        cursor = connection.cursor(dictionary=True)
+
+        query = """
+            SELECT direction, neto, containers
+            FROM transactions
+            WHERE direction = %s AND neto = %s 
+        """
+
+        # SQL Query to fetch required columns
+        
+        cursor.execute(query, ("out", "na"))
+        transactions = cursor.fetchall()
+
+        return jsonify(transactions)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error xx": str(err)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
