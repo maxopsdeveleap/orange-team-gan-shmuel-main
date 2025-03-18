@@ -2,7 +2,8 @@
 
 # Test batch-weight endpoint
 echo "Testing batch-weight endpoint..."
-curl -X POST http://localhost:5000/batch-weight
+curl -X POST http://localhost:5000/batch-weight -H "Content-Type: application/json" -d '{"file": "containers1.csv"}'
+curl -X POST http://localhost:5000/batch-weight -H "Content-Type: application/json" -d '{"file": "containers2.csv"}'
 
 # Test weight endpoint (truck entering - weigh in)
 echo -e "\nTesting weight endpoint #1 (direction: in)..."
@@ -55,5 +56,29 @@ curl -X POST http://localhost:5000/weight \
          "weight": 12000,
          "unit": "kg",
          "force": false,
+         "produce": "orange"
+     }'
+
+curl -X POST http://localhost:5000/weight \
+     -H "Content-Type: application/json" \
+     -d '{
+         "direction": "in",
+         "truck": "truck3",
+         "containers": "C-35434,K-4109",
+         "weight": 15000,
+         "unit": "kg",
+         "force": false,
+         "produce": "orange"
+     }'
+
+curl -X POST http://localhost:5000/weight \
+     -H "Content-Type: application/json" \
+     -d '{
+         "direction": "in",
+         "truck": "truck3",
+         "containers": "C-35434,K-4109",
+         "weight": 12345,
+         "unit": "kg",
+         "force": true,
          "produce": "orange"
      }'
