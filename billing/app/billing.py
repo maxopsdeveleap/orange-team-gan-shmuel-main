@@ -104,13 +104,13 @@ def register_truck():
     provider_id = data['provider_id']  # Provider's ID
     license_number = data['truck_id']  # Truck's license plate (truck_id)
 
-    conn = None
+    connection = None
     cursor = None
 
     try:
         # Establish a database connection
         connection = connect()
-        cursor = conn.cursor(dictionary=True)
+        cursor = connection.cursor()
 
         # Check if the provider exists
         cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
@@ -128,7 +128,7 @@ def register_truck():
 
         # Insert the truck into the database
         cursor.execute("INSERT INTO trucks (truck_id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
-        conn.commit()
+        connection.commit()
 
         # Return success response
         return jsonify({"message": "Truck registered successfully", "truck_id": license_number}), 201
@@ -142,8 +142,8 @@ def register_truck():
         # Close the cursor and connection
         if cursor:
             cursor.close()
-        if conn:
-            conn.close()
+        if connection:
+            connection.close()
 
 
 
