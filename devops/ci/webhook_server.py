@@ -61,12 +61,18 @@ def github_webhook():
 
             commit_id = payload["head"]["user"]["sha"]
 
-            github_username = "user"
+            # Run git show and capture output
+            result = subprocess.run(
+                ["git", "-C", LOCAL_REPO_PATH, "show", "--no-patch", "--pretty=format:%an|%ae"],  # Get Author Name and Email
+                capture_output=True,
+                text=True,
+                check=True
+            )
 
-            subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
-
-            developer_email = "test@gmail.com"
-
+            # Extract Name and Email
+            output = result.stdout.strip()  # Remove extra spaces/newlines
+            github_username, developer_email = output.split("|")
+            
 
 
 
