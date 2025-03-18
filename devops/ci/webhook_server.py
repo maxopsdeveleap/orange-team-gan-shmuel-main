@@ -48,9 +48,15 @@ DEVELOPERS = {
 
     "ShobashAndi": {"name": "Andi Shobash", "email": "andishubash@gmail.com"},
 
-    "carmel": {"name": "carmel", "email": "Amarilio.Carmel@gmail.com"},
+    "Carmel-Amarilio ": {"name": "carmel", "email": "Amarilio.Carmel@gmail.com"},
 
-    "dor": {"name": "Andi Shobash", "email": "Dor@0ds.org"}
+    " dor-solomon ": {"name": "Dor Solomon", "email": "Dor@0ds.org"},
+    
+    " danitish ": {"name": "Daniel tsh", "email": "Dor@0ds.org"},
+
+    " itaytzdaka": {"name": "Itay zdaka", "email": "Dor@0ds.org"}
+
+    
 
 }
 
