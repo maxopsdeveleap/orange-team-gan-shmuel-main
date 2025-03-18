@@ -82,3 +82,13 @@ curl -X POST http://localhost:5000/weight \
          "force": true,
          "produce": "orange"
      }'
+
+curl -X POST http://localhost:5000/weight \
+     -H "Content-Type: application/json" \
+     -d '{
+         "direction": "none",
+         "containers": "A-123456789",
+         "weight": 123,
+         "unit": "kg",
+         "produce": "orange"
+     }'
