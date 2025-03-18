@@ -44,3 +44,16 @@ try:
     connection.close()
 except Exception as e:
     print(f"Test failed with exception: {e}")
+
+def test_health_check():
+    response = requests.get(f"{link}/health")
+    try:
+        assert response.status_code == 20
+    except AssertionError as e:
+        print(f"AssertionError-HealthStatusCode")
+    try:
+        assert response.text == "OK"
+    except AssertionError as e:
+        print(f"AssertionError-HealthResponse")
+
+test_health_check()
