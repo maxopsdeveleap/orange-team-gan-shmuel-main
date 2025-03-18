@@ -136,8 +136,8 @@ def handle_weight_out(cursor, connection, data, truck, containers):
             container_record = cursor.fetchone()
 
             if not container_record:
-                return jsonify({"error": f"Container {container} not registered"}), 404
-
+                total_container_tara = None
+                break
             total_container_tara += container_record['weight']
 
     # Prepare out transaction
@@ -153,11 +153,9 @@ def handle_weight_out(cursor, connection, data, truck, containers):
         entry_bruto = entry_record['bruto']
 
         # Calculate neto
-        neto = entry_bruto - truck_tara - total_container_tara
-
-        # Handle case where not all container weights are known
-        if total_container_tara == 0:
-            neto = "na"
+        neto = "na"
+        if total_container_tara is not None:
+            neto = entry_bruto - truck_tara - total_container_tara 
 
         # Insert out transaction
         query = """
