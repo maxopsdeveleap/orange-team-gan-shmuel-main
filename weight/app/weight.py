@@ -63,75 +63,84 @@ def health():
 # New weight transaction endpoint
 
 
-def handle_weight_in(cursor, connection, data, direction, truck, containers, produce):
+def handle_weight_in(cursor, connection, data, direction, truck, containers):
     # Check for existing recent transaction for this truck/direction
-    existing_query = """
-    SELECT id FROM transactions
-    WHERE truck = %s AND direction = %s
-    ORDER BY datetime DESC LIMIT 1
+    existing_in_query = """
+        SELECT t1.id, t1.session
+        FROM transactions t1
+        LEFT JOIN (
+            SELECT truck, MAX(datetime) as latest_out_time
+            FROM transactions
+            WHERE truck = %s AND direction = 'out'
+            GROUP BY truck
+        ) t2 ON t1.truck = t2.truck
+        WHERE t1.truck = %s AND t1.direction = 'in'
+            AND (t2.latest_out_time IS NULL OR t1.datetime > t2.latest_out_time)
+        ORDER BY t1.datetime DESC
+        LIMIT 1
     """
-    cursor.execute(existing_query, (truck, direction))
-    existing_record = cursor.fetchone()
-
+    cursor.execute(existing_in_query, (truck, truck))
+    existing_entry = cursor.fetchone()
+    
     # Handle force flag for repeated transactions
     force = data.get('force', False)
-    if existing_record and not force:
+    if existing_entry and not force:
         return jsonify({"error": "Transaction already exists. Use force=true to overwrite."}), 400
 
     # Prepare transaction data
     now = datetime.now()
     weight = data['weight']
     unit = data['unit']
+    produce = data.get('produce', 'na')
 
     # set up the last session id to maintaine continues
-    cursor.execute(
-        """ SELECT session FROM transactions ORDER BY session DESC""")
-    session_id = cursor.fetchone()
-    if session_id is None:
-        session_id = 0
+    if existing_entry and force:
+        # If overriding an existing entry, use its session ID
+        session_id = existing_entry['session']
+        # Delete the existing entry if force=true
+        delete_query = "DELETE FROM transactions WHERE id = %s"
+        cursor.execute(delete_query, (existing_entry['id'],))
     else:
-        session_id += 1
+        # Get a new session ID
+        cursor.execute("SELECT MAX(session) as max_session FROM transactions")
+        session_result = cursor.fetchone()
+        if session_result is None or session_result['max_session'] is None:
+            session_id = 1
+        else:
+            session_id = session_result['max_session'] + 1
+
+
 
     # Handle different scenarios
-    if direction == 'in':
-        # Insert truck transaction
-        if truck != 'na':
-            query = """
+    # Insert truck transaction
+    if truck != 'na':
+        query = """
             INSERT INTO transactions
-            (datetime, direction, truck, containers, bruto, produce,session)
+            (datetime, direction, truck, containers, bruto, produce, session)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (now, direction, truck, containers,
-                      weight, produce, session_id)
-            cursor.execute(query, values)
-            transaction_id = cursor.lastrowid
-
-            # If containers present, register them
-            # if containers:
-            #     containers = containers.split(',')
-            #     for container in containers:
-            #         container_query = """
-            #         INSERT INTO containers_registered
-            #         (container_id, weight, unit)
-            #         VALUES (%s, %s, %s)
-            #         """
-            #         cursor.execute(container_query, (container,
-            #                                          container_weight, container_unit))
-
-        # Handle standalone container for 'none' direction
-        elif direction == 'none':
-            if not containers:
-                return jsonify({"error": "No containers specified for 'none' direction"}), 400
-
-            for container in containers:
-                container_query = """
+        """
+        values = (now, direction, truck, 
+                 json.dumps(containers.split(',')) if containers else None,
+                 weight, produce, session_id)
+        cursor.execute(query, values)
+        transaction_id = cursor.lastrowid
+    
+    # Handle container registration logic for 'none' direction
+    elif direction == 'none':
+        if not containers:
+            return jsonify({"error": "No containers specified for 'none' direction"}), 400
+        
+        containers_list = containers.split(',')
+        for container in containers_list:
+            container_query = """
                 INSERT INTO containers_registered
                 (container_id, weight, unit)
                 VALUES (%s, %s, %s)
-                """
-                cursor.execute(container_query, (container, weight, unit))
-            transaction_id = None  # No truck transaction
-
+                ON DUPLICATE KEY UPDATE weight = %s, unit = %s
+            """
+            cursor.execute(container_query, (container, weight, unit, weight, unit))
+        transaction_id = None  # No truck transaction
+    
     connection.commit()
 
     # Prepare response
@@ -152,13 +161,13 @@ def handle_weight_out(cursor, connection, data, truck, containers):
 
     # Find the most recent entry for this truck
     find_entry_query = """
-    SELECT id, truck, bruto
+    SELECT id, truck, bruto, session
     FROM transactions
     WHERE truck = %s AND direction = 'in'
     ORDER BY datetime DESC
     LIMIT 1
     """
-    cursor.execute(find_entry_query, (truck))
+    cursor.execute(find_entry_query, (truck,))
     entry_record = cursor.fetchone()
 
     # Validate entry record exists
@@ -172,7 +181,7 @@ def handle_weight_out(cursor, connection, data, truck, containers):
         for container in containers:
             # Fetch container weight from registered containers
             container_query = "SELECT weight FROM containers_registered WHERE container_id = %s"
-            cursor.execute(container_query, (container))
+            cursor.execute(container_query, (container,))
             container_record = cursor.fetchone()
 
             if not container_record:
@@ -203,7 +212,7 @@ def handle_weight_out(cursor, connection, data, truck, containers):
         query = """
         INSERT INTO transactions
         (datetime, direction, truck, bruto,
-         truckTara, neto, containers, unit, produce)
+         truckTara, neto, containers, produce, session)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
@@ -214,8 +223,8 @@ def handle_weight_out(cursor, connection, data, truck, containers):
             truck_tara,  # truck tara from current out weight
             neto if neto != "na" else None,
             json.dumps(containers) if containers else None,
-            data['unit'],  # include the unit
-            data.get('produce', 'na')  # include produce, defaulting to 'na'
+            data.get('produce', 'na'),  # include produce, defaulting to 'na'
+            entry_record['session']
         )
         cursor.execute(query, values)
         transaction_id = cursor.lastrowid
@@ -387,8 +396,6 @@ def record_weight_transaction():
         # containers = data.get('containers', '').split(
         #     ',') if data.get('containers') else []
         containers = data["containers"]
-        force = data.get('force', False)
-        produce = data.get('produce', 'na')
 
         # Validate direction
         valid_directions = ['in', 'out', 'none']
@@ -405,7 +412,7 @@ def record_weight_transaction():
         try:
             # Handle different scenarios based on direction
             if direction in ['in', 'none']:
-                return handle_weight_in(cursor, connection, data, direction, truck, containers, produce)
+                return handle_weight_in(cursor, connection, data, direction, truck, containers)
             elif direction == 'out':
                 return handle_weight_out(cursor, connection, data, truck, containers)
 
