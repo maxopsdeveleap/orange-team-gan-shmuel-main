@@ -279,24 +279,53 @@ def convert_to_kg(weight, unit="lbs"):
 
 @app.route("/item/<id>", methods=["GET"])
 def get_item(id):
-    from_param = request.args.get('from', default="20230301000000")
-    to_param = request.args.get('to', default=str(
-        datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
 
+    # Get the current date and time
+    now = datetime.now()
+
+    paramFrom = request.args.get("from", now.strftime("%Y%m01000000"))
+    paramTo = request.args.get('to', now.strftime('%Y%m%d%H%M%S'))
+
+    # Convert paramFrom and paramTo to MySQL DATETIME format
     try:
-        t1 = datetime.datetime.strptime(from_param, '%Y%m%d%H%M%S')
-        t2 = datetime.datetime.strptime(to_param, '%Y%m%d%H%M%S')
+        paramFromFormatted = datetime.strptime(paramFrom, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+        paramToFormatted = datetime.strptime(paramTo, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return jsonify({"error": "Invalid date format. Expected format: yyyymmddhhmmss"}), 400
 
-    if id not in items_data:
-        return jsonify({"error": "Item not found"}), 404
 
-    item_data = items_data[id]
+    connection = mysqlweight.connect()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT * FROM transactions 
+        WHERE truck = %s 
+        OR JSON_CONTAINS(containers, JSON_QUOTE(%s))
+    """
+    
+    cursor.execute(query, (id, id))
+    transactions = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    if not transactions:
+        return jsonify({"error": "No transactions found"}), 404
+
+
+    sessions = set()
+    tara = "na"
+
+    for record in transactions:
+        sessions.add(record["session"])
+        if record["truckTara"]:
+            tara=record["truckTara"]
+
+    
     return jsonify({
         "id": id,
-        "tara": item_data["tara"],
-        "sessions": item_data["sessions"]
+        "tara": tara,
+        "sessions": list(sessions)  
     }), 200
 
 
