@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from mysqlbilling import connect
 import os
 
@@ -117,6 +117,24 @@ def update_truck(id):
    finally:
        cursor.close()
        connection.close()
+
+
+@app.route('/rates', methods=['GET'])
+def get_rates():
+    try:
+        RATES_DIRECTORY = "/in"
+        # Define the path to the rates file
+        rates_file_path = os.path.join(RATES_DIRECTORY, "rates.xlsx")
+
+        # Check if the file exists
+        if not os.path.exists(rates_file_path):
+            return jsonify({"error": "Rates file not found"}), 404
+
+        # Send file
+        return send_file(rates_file_path, as_attachment=True, download_name="rates.xlsx")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
    
 
 if __name__ == '__main__':
