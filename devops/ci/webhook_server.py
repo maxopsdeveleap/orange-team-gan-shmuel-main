@@ -6,7 +6,7 @@ from email.message import EmailMessage
 
 app = Flask(__name__)
 
-# Set these variables
+# Git Configuration
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 LOCAL_REPO_PATH = "/home/max/Desktop/tasks_develeap/orange_team/orange_repo/orange-team-gan-shmuel-main"
 SERVICES = ["weight", "billing"]
@@ -17,46 +17,53 @@ EMAIL_PASSWORD = os.getenv("ZOHO_EMAIL_PASSWORD")  # Securely read from environm
 SMTP_SERVER = "smtp.zoho.com"
 SMTP_PORT = 587
 
+# Predefined Developer Dictionary
+DEVELOPERS = {
+    "edi1215": {"name": "Edi Shmuel", "email": "edi.shmuel@example.com"},
+    "maxopsdeveleap": {"name": "Max Developer", "email": "max.developer@example.com"},
+    "johnsmith": {"name": "John Smith", "email": "john.smith@example.com"},
+}
+
+def get_developer_email(username):
+    """Retrieve developer email from predefined dictionary."""
+    return DEVELOPERS.get(username, {}).get("email", "team.notify@zohomail.com")
 
 @app.route('/webhook', methods=['POST'])
 def github_webhook():
-    event_type = request.headers.get('X-GitHub-Event')
     payload = request.json
+    event_type = request.headers.get('X-GitHub-Event')
 
-    # 🔹 Handle Pull Request Events (Only Run CI After Merge)
     if event_type == "pull_request":
         action = payload.get("action", "")
-        branch = payload.get("pull_request", {}).get("base", {}).get("ref", "")
-
+        
         if action == "closed" and payload.get("pull_request", {}).get("merged", False):
-            print(f"✅ PR to {branch} has been merged! Running CI...")
-            handle_ci_branch(branch)
-            return jsonify({"message": f"CI triggered for merged PR to {branch}"}), 200
+            branch = payload["pull_request"]["base"]["ref"]
+            github_username = payload["pull_request"]["user"]["login"]
+            developer_email = get_developer_email(github_username)
 
-        print(f"🔍 PR {action} on {branch} - No CI triggered yet.")
-        return jsonify({"message": "No CI triggered, waiting for merge."}), 200
+            print(f"🔹 Merge detected on branch: {branch} by {github_username} ({developer_email})")
 
-    return jsonify({"message": "Not a pull request event"}), 200
+            try:
+                pull_latest_code()
+                run_ci_pipeline(branch)
+                send_email(
+                    subject=f"✅ CI Success for {branch} by {github_username}",
+                    body="CI pipeline completed successfully for your merged PR.",
+                    receiver=developer_email
+                )
+                return jsonify({"message": "CI pipeline ran successfully"}), 200
 
+            except subprocess.CalledProcessError as e:
+                error_message = f"CI pipeline failed: {str(e)}"
+                print(f"❌ {error_message}")
+                send_email(
+                    subject=f"❌ CI Failure for {branch} by {github_username}",
+                    body=f"CI pipeline failed for your merged PR.\n\nError:\n{error_message}",
+                    receiver=developer_email
+                )
+                return jsonify({"message": "CI pipeline failed", "error": str(e)}), 500
 
-def handle_ci_branch(branch):
-    if branch == "main":
-        print(f"🚀 Production PR merged into {branch}, running production CI...")
-        run_production_pipeline()
-        send_email(
-            subject=f"🚀 Production Deployment Triggered on {branch}",
-            body="Production pipeline has started. You'll receive another email once deployment is complete.",
-            receiver="team.notify@zohomail.com"
-        )
-    else:
-        print(f"🔧 Development PR merged into {branch}, running development CI...")
-        run_ci_pipeline(branch)
-        send_email(
-            subject=f"✅ CI Success for {branch}",
-            body="CI pipeline completed successfully for your merged PR.",
-            receiver="team.notify@zohomail.com"
-        )
-
+    return jsonify({"message": "Not a relevant event"}), 200
 
 def pull_latest_code():
     if not os.path.exists(LOCAL_REPO_PATH):
@@ -66,7 +73,6 @@ def pull_latest_code():
         print(f"Pulling latest changes in {LOCAL_REPO_PATH}...")
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
-
 
 def run_ci_pipeline(branch):
     print(f"🔧 Running CI pipeline for branch: {branch}")
@@ -79,6 +85,7 @@ def run_ci_pipeline(branch):
         subprocess.run(["docker-compose", "up", "-d"], cwd=service_path, check=True)
 
     print("✅ Running E2E tests (placeholder)...")
+    # TODO: Implement real tests
 
     for service in SERVICES:
         service_path = os.path.join(LOCAL_REPO_PATH, service)
@@ -86,12 +93,6 @@ def run_ci_pipeline(branch):
         subprocess.run(["docker-compose", "down"], cwd=service_path, check=True)
 
     print("✅ CI pipeline completed successfully.")
-
-
-def run_production_pipeline():
-    print("🚀 Running Production Deployment... (Placeholder)")
-    # TODO: Add actual production deployment logic (Docker push, EC2 deploy, etc.)
-
 
 def send_email(subject, body, receiver):
     msg = EmailMessage()
@@ -112,7 +113,6 @@ def send_email(subject, body, receiver):
         print("✅ Email sent successfully.")
     except Exception as e:
         print(f"❌ Email failed: {e}")
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050)
