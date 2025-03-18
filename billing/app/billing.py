@@ -36,15 +36,15 @@ def create_provider():
 
         provider_id = cursor.lastrowid
         return jsonify({"id": str(provider_id)}), 201
-    except:
-         return jsonify({"error": "Failed to insert new entry"}), 500
+    except Exception as e:
+         return jsonify({"error": str(e)}), 500
     finally:
          cursor.close()
          connection.close()
 
 
 @app.route('/provider/<string:provider_id>', methods=['PUT'])
-def update_provider(provider_id):    
+def update_provider(provider_id):   
     try:
         provider_id = int(provider_id)  # Ensure it's an integer
     except ValueError:
@@ -90,6 +90,34 @@ def update_provider(provider_id):
         cursor.close()
         connection.close()
 
+@app.route('/truck/<id>', methods=['PUT'])
+def update_truck(id):
+   data = request.get_json()
+   if not data or "provider_id" not in data:
+       return jsonify({"error": "Provider ID is required"}), 400
+   new_provider_id = data["provider_id"]
+   
+   connection = connect()
+   cursor = connection.cursor()
+
+   try:
+       cursor.execute("SELECT id FROM Truck WHERE id = %s", (id,))
+       if not cursor.fetchone():
+           return jsonify({"error": "No matching truck found"}),404
+       cursor.execute("SELECT id FROM Provider WHERE id = %s", (new_provider_id,))
+       if not cursor.fetchone():
+           return jsonify({"error": "Invalid provider ID"}), 400
+       
+       cursor.execute("UPDATE Truck SET provider_id = %s WHERE id = %s", (new_provider_id, id))
+       connection.commit()
+
+       return jsonify({"message": "Truck updated successfully"}), 200
+   except Exception as e:
+       return jsonify({"error": str(e)}), 500
+   finally:
+       cursor.close()
+       connection.close()
+   
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=os.environ.get("FLASK_PORT", 5000))
