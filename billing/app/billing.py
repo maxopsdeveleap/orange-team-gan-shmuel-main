@@ -1,8 +1,13 @@
 from flask import Flask, request, jsonify, send_file
 from mysqlbilling import connect
 import os
+import pandas as pd
 
 app = Flask(__name__)
+
+
+RATES_FOLDER= os.path.abspath(os.path.join(os.path.dirname(__file__), "..","in"))
+app.config["RATES_FOLDER_PATH"] = RATES_FOLDER
 
 
 @app.route('/health', methods=['GET'])
@@ -136,6 +141,72 @@ def get_rates():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
    
+@app.route('/rates', methods=['POST'])
+def add_rates():
+    if "file" not in request.files:
+        return jsonify({"error": "Invalid request, file required"}), 400
+    
+    file = request.files["file"]
+
+    if not file.filename:
+        return jsonify({"error": "Filename is required, currently empty"}), 400
+    
+    if not file.filename.endswith("xlsx"):
+        return jsonify({"error": "File must be excel. '.xlsx'"}), 400
+
+    file_path = os.path.join(app.config["RATES_FOLDER_PATH"], file.filename)
+    file.save(file_path)
+
+    dataframe = pd.read_excel(file_path)
+
+    required_columns = {"Product", "Rate", "Scope"}
+
+    if not required_columns.issubset(dataframe.columns):
+        return jsonify({"error": "Missing required names"}), 400
+
+    if dataframe.empty:
+        return jsonify({"error": "Excel file is empty of rows"}), 400
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM Rates")
+
+    try:
+        for i, row in dataframe.iterrows():
+            product = row["Product"]
+            rate = row["Rate"]
+            scope = row["Scope"]
+
+            if scope == "All":
+                provider_id = ""
+            else:
+                provider_id = scope
+            
+            if provider_id:
+                cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+                if not cursor.fetchone():
+                     continue
+                else:
+                    cursor.execute("""
+                    INSERT INTO Rates (product_id, rate, scope)
+                    VALUES (%s, %s, %s)
+                    """, (product, rate, provider_id))
+            else:
+                cursor.execute("""
+                INSERT INTO Rates (product_id, rate, scope)
+                VALUES (%s, %s, %s)
+                """, (product, rate, scope))
+        connection.commit()
+        return jsonify({"message": "Row added successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+
+
+
+
 
 # POST /truck - Register a truck
 @app.route('/truck', methods=['POST'])
