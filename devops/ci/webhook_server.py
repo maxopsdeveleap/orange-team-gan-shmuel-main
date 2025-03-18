@@ -23,40 +23,39 @@ def github_webhook():
     event_type = request.headers.get('X-GitHub-Event')
     payload = request.json
 
-    if event_type == "push":
-        ref = payload.get("ref", "")
-        branch = ref.replace("refs/heads/", "")
+    # 🔹 Handle Pull Request Events (Only Run CI After Merge)
+    if event_type == "pull_request":
+        action = payload.get("action", "")
+        branch = payload.get("pull_request", {}).get("base", {}).get("ref", "")
 
-        # Extract real developer name and email from head_commit
-        pusher_name = payload.get("head_commit", {}).get("author", {}).get("name", "Unknown User")
-        pusher_email = payload.get("head_commit", {}).get("author", {}).get("email", "team.notify@zohomail.com")  # Fallback if missing
+        if action == "closed" and payload.get("pull_request", {}).get("merged", False):
+            print(f"✅ PR to {branch} has been merged! Running CI...")
+            handle_ci_branch(branch)
+            return jsonify({"message": f"CI triggered for merged PR to {branch}"}), 200
 
-        print(f"🔹 Push detected on branch: {branch} by {pusher_name} ({pusher_email})")
+        print(f"🔍 PR {action} on {branch} - No CI triggered yet.")
+        return jsonify({"message": "No CI triggered, waiting for merge."}), 200
 
-        if branch != "development":
-            return jsonify({"message": "Push not on development branch, ignoring."}), 200
+    return jsonify({"message": "Not a pull request event"}), 200
 
-        try:
-            pull_latest_code()
-            run_ci_pipeline(branch)
-            send_email(
-                subject=f"✅ CI Success for {branch} by {pusher_name}",
-                body="CI pipeline completed successfully for your push to development.",
-                receiver=pusher_email
-            )
-            return jsonify({"message": "CI pipeline ran successfully for development"}), 200
 
-        except subprocess.CalledProcessError as e:
-            error_message = f"CI pipeline failed: {str(e)}"
-            print(f"❌ {error_message}")
-            send_email(
-                subject=f"❌ CI Failure for {branch} by {pusher_name}",
-                body=f"CI pipeline failed for your push to development.\n\nError:\n{error_message}",
-                receiver=pusher_email
-            )
-            return jsonify({"message": "CI pipeline failed", "error": str(e)}), 500
-
-    return jsonify({"message": "Not a push event"}), 200
+def handle_ci_branch(branch):
+    if branch == "main":
+        print(f"🚀 Production PR merged into {branch}, running production CI...")
+        run_production_pipeline()
+        send_email(
+            subject=f"🚀 Production Deployment Triggered on {branch}",
+            body="Production pipeline has started. You'll receive another email once deployment is complete.",
+            receiver="team.notify@zohomail.com"
+        )
+    else:
+        print(f"🔧 Development PR merged into {branch}, running development CI...")
+        run_ci_pipeline(branch)
+        send_email(
+            subject=f"✅ CI Success for {branch}",
+            body="CI pipeline completed successfully for your merged PR.",
+            receiver="team.notify@zohomail.com"
+        )
 
 
 def pull_latest_code():
@@ -65,7 +64,7 @@ def pull_latest_code():
         subprocess.run(["git", "clone", GIT_REPO, LOCAL_REPO_PATH], check=True)
     else:
         print(f"Pulling latest changes in {LOCAL_REPO_PATH}...")
-        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)  # Always good to fetch before pull
+        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
 
 
@@ -79,9 +78,7 @@ def run_ci_pipeline(branch):
         subprocess.run(["docker-compose", "build"], cwd=service_path, check=True)
         subprocess.run(["docker-compose", "up", "-d"], cwd=service_path, check=True)
 
-    # Placeholder for E2E tests
     print("✅ Running E2E tests (placeholder)...")
-    # TODO: Add real tests here later
 
     for service in SERVICES:
         service_path = os.path.join(LOCAL_REPO_PATH, service)
@@ -89,6 +86,11 @@ def run_ci_pipeline(branch):
         subprocess.run(["docker-compose", "down"], cwd=service_path, check=True)
 
     print("✅ CI pipeline completed successfully.")
+
+
+def run_production_pipeline():
+    print("🚀 Running Production Deployment... (Placeholder)")
+    # TODO: Add actual production deployment logic (Docker push, EC2 deploy, etc.)
 
 
 def send_email(subject, body, receiver):
