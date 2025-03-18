@@ -1,8 +1,13 @@
 from flask import Flask, request, jsonify, send_file
 from mysqlbilling import connect
 import os
+import pandas as pd
 
 app = Flask(__name__)
+
+
+RATES_FOLDER= os.path.abspath(os.path.join(os.path.dirname(__file__), "..","in"))
+app.config["RATES_FOLDER_PATH"] = RATES_FOLDER
 
 
 @app.route('/health', methods=['GET'])
@@ -90,6 +95,7 @@ def update_provider(provider_id):
         cursor.close()
         connection.close()
 
+
 @app.route('/truck/<id>', methods=['PUT'])
 def update_truck(id):
    data = request.get_json()
@@ -135,7 +141,129 @@ def get_rates():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-   
+
+
+@app.route('/rates', methods=['POST'])
+def add_rates():
+    if "file" not in request.files:
+        return jsonify({"error": "Invalid request, file required"}), 400
+    
+    file = request.files["file"]
+
+    if not file.filename:
+        return jsonify({"error": "Filename is required, currently empty"}), 400
+    
+    if not file.filename.endswith("xlsx"):
+        return jsonify({"error": "File must be excel. '.xlsx'"}), 400
+
+    file_path = os.path.join(app.config["RATES_FOLDER_PATH"], file.filename)
+    file.save(file_path)
+
+    dataframe = pd.read_excel(file_path)
+
+    required_columns = {"Product", "Rate", "Scope"}
+
+    if not required_columns.issubset(dataframe.columns):
+        return jsonify({"error": "Missing required names"}), 400
+
+    if dataframe.empty:
+        return jsonify({"error": "Excel file is empty of rows"}), 400
+
+    connection = connect()
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM Rates")
+
+    try:
+        for i, row in dataframe.iterrows():
+            product = row["Product"]
+            rate = row["Rate"]
+            scope = row["Scope"]
+
+            if scope == "All":
+                provider_id = ""
+            else:
+                provider_id = scope
+            
+            if provider_id:
+                cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+                if not cursor.fetchone():
+                     continue
+                else:
+                    cursor.execute("""
+                    INSERT INTO Rates (product_id, rate, scope)
+                    VALUES (%s, %s, %s)
+                    """, (product, rate, provider_id))
+            else:
+                cursor.execute("""
+                INSERT INTO Rates (product_id, rate, scope)
+                VALUES (%s, %s, %s)
+                """, (product, rate, scope))
+        connection.commit()
+        return jsonify({"message": "Row added successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+# POST /truck - Register a truck
+@app.route('/truck', methods=['POST'])
+def register_truck():
+    # Get JSON data from the request
+    data = request.get_json()
+
+    # Validate input
+    if not data or 'provider_id' not in data or 'id' not in data:
+        return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
+
+    provider_id = data['provider_id']  # Provider's ID
+    license_number = data['id']  # Truck's license plate (truck_id)
+
+    connection = None
+    cursor = None
+
+    try:
+        # Establish a database connection
+        connection = connect()
+        cursor = connection.cursor()
+
+        # Check if the provider exists
+        cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+        provider = cursor.fetchone()
+
+        if not provider:
+            return jsonify({"error": "Provider not found"}), 404
+
+        # Check if the truck already exists
+        cursor.execute("SELECT * FROM Trucks WHERE id = %s", (license_number,))
+        existing_truck = cursor.fetchone()
+
+        if existing_truck:
+            return jsonify({"error": "Truck already exists"}), 409
+
+        # Insert the truck into the database
+        cursor.execute("INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
+        connection.commit()
+
+        # Return success response
+        return jsonify({"message": "Truck registered successfully", "id": license_number}), 201
+
+    except Exception as e:
+        print(f"Error updating provider: {e}")
+        return jsonify({"error": f"Failed to update provider: {str(e)}"}), 500
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=os.environ.get("FLASK_PORT", 5000))
