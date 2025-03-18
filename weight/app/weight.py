@@ -328,28 +328,6 @@ def get_item(id):
         "sessions": list(sessions)  
     }), 200
 
-# http://localhost:5000/session/1619874477.123456
-
-
-@app.route("/session/<id>", methods=["GET"])
-def get_session(id):
-    session = next((item for item in sessions_data if item['id'] == id), None)
-
-    if not session:
-        return jsonify({"error": "Session not found"}), 404
-
-    response = {
-        "id": session["id"],
-        "direction": session["direction"],
-        "bruto": session["bruto"],
-    }
-
-    if session["direction"] == "out":
-        response["truckTara"] = 1000
-        response["neto"] = session["neto"] if session["neto"] != "na" else "na"
-
-    return jsonify(response), 200
-
 
 @app.route("/weight", methods=["GET"])
 def weight():
@@ -367,11 +345,6 @@ def weight():
         paramTo, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
 
     paramFilter = request.args.get("filter", "in,out,none")
-
-    # return jsonify({
-    #     "from":paramFromFormatted,
-    #     "to":paramToFormatted,
-    #     "filter":paramFilter}), 200
 
     filterList = tuple(paramFilter.split(","))
 
@@ -395,8 +368,7 @@ def weight():
         # Convert `containers` column from string to list
         for transaction in transactions:
             if transaction["containers"]:  # Ensure it's not None
-                transaction["containers"] = transaction["containers"].split(
-                    ",")
+                transaction["containers"] = json.loads(transaction["containers"])
 
         cursor.close()
         connection.close()
@@ -505,6 +477,57 @@ def batch_weight():
 
     return jsonify({"message": "Batch weight uploaded successfully", "count": len(containers)})
 
+
+@app.route("/session/<id>", methods=["GET"])
+def get_session(id):
+    try:
+        # Connect to database
+        connection = create_connection_with_retry()
+        if not connection:
+            return jsonify({"error": "Database connection failed"}), 500
+            
+        cursor = connection.cursor(dictionary=True)
+        
+        # Query to get session data
+        session_query = """
+            SELECT id, truck, direction, bruto, truckTara, neto
+            FROM transactions
+            WHERE session = %s
+            ORDER BY datetime
+        """
+        
+        cursor.execute(session_query, (id,))
+        session_records = cursor.fetchall()
+        
+        # Check if session exists
+        if not session_records:
+            return jsonify({"error": "Session not found"}), 404
+            
+        # Process the results
+        # For simplicity, we'll use the first record for general info
+        first_record = session_records[0]
+        
+        # Prepare the base response
+        response = {
+            "id": id,
+            "truck": first_record["truck"] if first_record["truck"] else "na",
+            "bruto": first_record["bruto"]
+        }
+        
+        # Add OUT-specific fields if applicable
+        out_record = next((record for record in session_records if record["direction"] == "out"), None)
+        if out_record:
+            response["truckTara"] = out_record["truckTara"]
+            response["neto"] = out_record["neto"] if out_record["neto"] is not None else "na"
+            
+        cursor.close()
+        connection.close()
+        
+        return jsonify(response), 200
+        
+    except Exception as e:
+        print(f"Error retrieving session: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
