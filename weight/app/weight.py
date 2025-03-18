@@ -84,13 +84,12 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers, pro
     unit = data['unit']
 
     # set up the last session id to maintaine continues
-    cursor.execute(
-        """ SELECT session FROM transactions ORDER BY session DESC""")
-    session_id = cursor.fetchone()
-    if session_id is None:
+    cursor.execute(""" SELECT session FROM transactions ORDER BY session DESC LIMIT 1""")
+    session_result = cursor.fetchone()
+    if session_result is None:
         session_id = 0
     else:
-        session_id += 1
+        session_id = session_result['session'] + 1  # Extract the value before adding
 
     # Handle different scenarios
     if direction == 'in':
@@ -152,13 +151,13 @@ def handle_weight_out(cursor, connection, data, truck, containers):
 
     # Find the most recent entry for this truck
     find_entry_query = """
-    SELECT id, truck, bruto
+    SELECT id, truck, bruto, session
     FROM transactions
     WHERE truck = %s AND direction = 'in'
     ORDER BY datetime DESC
     LIMIT 1
     """
-    cursor.execute(find_entry_query, (truck))
+    cursor.execute(find_entry_query, (truck,))
     entry_record = cursor.fetchone()
 
     # Validate entry record exists
@@ -172,7 +171,7 @@ def handle_weight_out(cursor, connection, data, truck, containers):
         for container in containers:
             # Fetch container weight from registered containers
             container_query = "SELECT weight FROM containers_registered WHERE container_id = %s"
-            cursor.execute(container_query, (container))
+            cursor.execute(container_query, (container,))
             container_record = cursor.fetchone()
 
             if not container_record:
@@ -203,7 +202,7 @@ def handle_weight_out(cursor, connection, data, truck, containers):
         query = """
         INSERT INTO transactions
         (datetime, direction, truck, bruto,
-         truckTara, neto, containers, unit, produce)
+         truckTara, neto, containers, produce, session)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
@@ -214,8 +213,8 @@ def handle_weight_out(cursor, connection, data, truck, containers):
             truck_tara,  # truck tara from current out weight
             neto if neto != "na" else None,
             json.dumps(containers) if containers else None,
-            data['unit'],  # include the unit
-            data.get('produce', 'na')  # include produce, defaulting to 'na'
+            data.get('produce', 'na'),  # include produce, defaulting to 'na'
+            entry_record['session']
         )
         cursor.execute(query, values)
         transaction_id = cursor.lastrowid

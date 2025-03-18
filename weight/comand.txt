@@ -5,7 +5,7 @@ POST/weight
     curl -X POST http://localhost:5000/weight      -H "Content-Type: application/json"      -d '{
             "direction": "in",
             "truck": "text123",
-            "containers": "C-35434 ,K-4109",
+            "containers": "C-35434,K-4109",
             "weight": 15000,
             "unit": "kg",
             "force": false,
@@ -14,7 +14,7 @@ POST/weight
     curl -X POST http://localhost:5000/weight      -H "Content-Type: application/json"      -d '{
           "direction": "out",
           "truck": "text123",
-          "containers": "C-35434 ,K-4109",
+          "containers": "C-35434,K-4109",
           "weight": 12000,
           "unit": "kg",
           "force": false,
