@@ -20,11 +20,10 @@ try:
     whole_line = cursor.fetchall()
     for i in whole_line:
         print(i[0], i[1])
-except Exception as e:
-    print(f"Test failed with exception: {e}")
-finally:
     cursor.close()
     connection.close()
+except Exception as e:
+    print(f"Test failed with exception: {e}")
 
 
 try:
@@ -41,8 +40,7 @@ try:
     whole_line = cursor.fetchall()
     for i in whole_line:
         print(i[0], i[1])
-except Exception as e:
-    print(f"Test failed with exception: {e}")
-finally:
     cursor.close()
     connection.close()
+except Exception as e:
+    print(f"Test failed with exception: {e}")
