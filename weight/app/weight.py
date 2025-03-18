@@ -84,16 +84,26 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers, pro
     weight = data['weight']
     unit = data['unit']
 
+    # set up the last session id to maintaine continues
+    cursor.execute(
+        """ SELECT session FROM transactions ORDER BY session DESC""")
+    session_id = cursor.fetchone()
+    if session_id is None:
+        session_id = 0
+    else:
+        session_id += 1
+
     # Handle different scenarios
     if direction == 'in':
         # Insert truck transaction
         if truck != 'na':
             query = """
             INSERT INTO transactions
-            (datetime, direction, truck, containers, bruto, produce)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (datetime, direction, truck, containers, bruto, produce,session)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            values = (now, direction, truck, containers, weight, produce)
+            values = (now, direction, truck, containers,
+                      weight, produce, session_id)
             cursor.execute(query, values)
             transaction_id = cursor.lastrowid
 
@@ -129,7 +139,8 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers, pro
     response = {
         "id": transaction_id,
         "truck": truck,
-        "bruto": weight
+        "bruto": weight,
+        "session": session_id
     }
 
     return jsonify(response), 201
@@ -347,7 +358,8 @@ def weight():
         # Convert `containers` column from string to list
         for transaction in transactions:
             if transaction["containers"]:  # Ensure it's not None
-                transaction["containers"] = transaction["containers"].split(",")
+                transaction["containers"] = transaction["containers"].split(
+                    ",")
 
         cursor.close()
         connection.close()
