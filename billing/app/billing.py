@@ -184,8 +184,6 @@ def add_rates():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-    ## Be sure to pip freeze into root folder requirements.txt before committing
-
 
 
 
