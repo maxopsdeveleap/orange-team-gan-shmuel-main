@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 from mysqlbilling import connect
 import requests
 from datetime import datetime
@@ -266,6 +266,10 @@ def get_truck_info(id):
         logger.error(f"Unexpected error: {str(e)}", exc_info=True)
         return jsonify({"error": "Failed to process truck information request"}), 500
 
+@app.route('/truck-info-test', methods=['GET'])
+def truck_info_test_page():
+    """Serve the truck information test page HTML"""
+    return render_template('truck_info_test.html')
 
 
 if __name__ == '__main__':
