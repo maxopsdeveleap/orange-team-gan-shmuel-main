@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from mysqlbilling import connect
 import os
 
@@ -36,15 +36,15 @@ def create_provider():
 
         provider_id = cursor.lastrowid
         return jsonify({"id": str(provider_id)}), 201
-    except:
-         return jsonify({"error": "Failed to insert new entry"}), 500
+    except Exception as e:
+         return jsonify({"error": str(e)}), 500
     finally:
          cursor.close()
          connection.close()
 
 
 @app.route('/provider/<string:provider_id>', methods=['PUT'])
-def update_provider(provider_id):    
+def update_provider(provider_id):   
     try:
         provider_id = int(provider_id)  # Ensure it's an integer
     except ValueError:
@@ -90,6 +90,52 @@ def update_provider(provider_id):
         cursor.close()
         connection.close()
 
+@app.route('/truck/<id>', methods=['PUT'])
+def update_truck(id):
+   data = request.get_json()
+   if not data or "provider_id" not in data:
+       return jsonify({"error": "Provider ID is required"}), 400
+   new_provider_id = data["provider_id"]
+   
+   connection = connect()
+   cursor = connection.cursor()
+
+   try:
+       cursor.execute("SELECT id FROM Trucks WHERE id = %s", (id,))
+       if not cursor.fetchone():
+           return jsonify({"error": "No matching truck found"}),404
+       cursor.execute("SELECT id FROM Provider WHERE id = %s", (new_provider_id,))
+       if not cursor.fetchone():
+           return jsonify({"error": "Invalid provider ID"}), 400
+       
+       cursor.execute("UPDATE Trucks SET provider_id = %s WHERE id = %s", (new_provider_id, id))
+       connection.commit()
+
+       return jsonify({"message": "Truck updated successfully"}), 200
+   except Exception as e:
+       return jsonify({"error": str(e)}), 500
+   finally:
+       cursor.close()
+       connection.close()
+
+
+@app.route('/rates', methods=['GET'])
+def get_rates():
+    try:
+        RATES_DIRECTORY = "/in"
+        # Define the path to the rates file
+        rates_file_path = os.path.join(RATES_DIRECTORY, "rates.xlsx")
+
+        # Check if the file exists
+        if not os.path.exists(rates_file_path):
+            return jsonify({"error": "Rates file not found"}), 404
+
+        # Send file
+        return send_file(rates_file_path, as_attachment=True, download_name="rates.xlsx")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
 
 # POST /truck - Register a truck
 @app.route('/truck', methods=['POST'])
