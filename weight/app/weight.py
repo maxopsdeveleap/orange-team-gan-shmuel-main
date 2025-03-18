@@ -219,7 +219,7 @@ def handle_weight_out(cursor, connection, data, truck, containers):
             now,
             'out',
             truck,
-            out_weight,
+            entry_bruto,
             truck_tara,  # truck tara from current out weight
             neto if neto != "na" else None,
             json.dumps(containers) if containers else None,
