@@ -137,5 +137,60 @@ def get_rates():
         return jsonify({"error": str(e)}), 500
    
 
+# POST /truck - Register a truck
+@app.route('/truck', methods=['POST'])
+def register_truck():
+    # Get JSON data from the request
+    data = request.get_json()
+
+    # Validate input
+    if not data or 'provider_id' not in data or 'id' not in data:
+        return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
+
+    provider_id = data['provider_id']  # Provider's ID
+    license_number = data['id']  # Truck's license plate (truck_id)
+
+    connection = None
+    cursor = None
+
+    try:
+        # Establish a database connection
+        connection = connect()
+        cursor = connection.cursor()
+
+        # Check if the provider exists
+        cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+        provider = cursor.fetchone()
+
+        if not provider:
+            return jsonify({"error": "Provider not found"}), 404
+
+        # Check if the truck already exists
+        cursor.execute("SELECT * FROM Trucks WHERE id = %s", (license_number,))
+        existing_truck = cursor.fetchone()
+
+        if existing_truck:
+            return jsonify({"error": "Truck already exists"}), 409
+
+        # Insert the truck into the database
+        cursor.execute("INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)", (license_number, provider_id))
+        connection.commit()
+
+        # Return success response
+        return jsonify({"message": "Truck registered successfully", "id": license_number}), 201
+
+    except Exception as e:
+        print(f"Error updating provider: {e}")
+        return jsonify({"error": f"Failed to update provider: {str(e)}"}), 500
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=os.environ.get("FLASK_PORT", 5000))
