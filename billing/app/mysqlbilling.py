@@ -6,7 +6,7 @@ def connect():
   try:
     connection = mysql.connector.connect(
       host=os.environ.get('MYSQL_HOST', 'localhost'),
-      port=3306,
+      port=int(os.environ.get('MYSQL_PORT', 3306)),  # Default 3306 if not set
       user=os.environ.get('MYSQL_USER', 'root'),
       password=os.environ.get('MYSQL_PASSWORD', 'rootpassword'),
       database="billdb"

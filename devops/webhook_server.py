@@ -10,12 +10,8 @@ app = Flask(__name__)
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 LOCAL_REPO_PATH = "/home/max/Desktop/tasks_develeap/orange_team/orange_repo/orange-team-gan-shmuel-main"
 SERVICES = ["weight", "billing"]
-
-# Zoho Mail Configuration
-EMAIL_SENDER = "orange.team.ci@zohomail.com"
-EMAIL_PASSWORD = os.getenv("ZOHO_EMAIL_PASSWORD")  # Securely read from environment variable
-SMTP_SERVER = "smtp.zoho.com"
-SMTP_PORT = 587
+EMAIL_SENDER = "orange_team_gan_shmuel@hotmail.com"   # Replace with your Outlook email
+EMAIL_PASSWORD = "maxops123"      # Your Outlook password
 
 
 @app.route('/webhook', methods=['POST'])
@@ -29,7 +25,7 @@ def github_webhook():
 
         # Extract real developer name and email from head_commit
         pusher_name = payload.get("head_commit", {}).get("author", {}).get("name", "Unknown User")
-        pusher_email = payload.get("head_commit", {}).get("author", {}).get("email", "team.notify@zohomail.com")  # Fallback if missing
+        pusher_email = payload.get("head_commit", {}).get("author", {}).get("email", "team.notify@outlook.com")  # Fallback if missing
 
         print(f"🔹 Push detected on branch: {branch} by {pusher_name} ({pusher_email})")
 
@@ -65,7 +61,6 @@ def pull_latest_code():
         subprocess.run(["git", "clone", GIT_REPO, LOCAL_REPO_PATH], check=True)
     else:
         print(f"Pulling latest changes in {LOCAL_REPO_PATH}...")
-        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)  # Always good to fetch before pull
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
 
 
@@ -98,19 +93,18 @@ def send_email(subject, body, receiver):
     msg["From"] = EMAIL_SENDER
     msg["To"] = receiver
 
-    print(f"📧 Sending email to {receiver} via Zoho...")
+    print(f"📧 Sending email to {receiver} via Outlook...")
 
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.ehlo()
-            smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
-            smtp.send_message(msg)
-        print("✅ Email sent successfully.")
-    except Exception as e:
-        print(f"❌ Email failed: {e}")
+    # Connect to Outlook SMTP server with STARTTLS
+    with smtplib.SMTP('smtp.office365.com', 587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()  # Secure connection
+        smtp.ehlo()
+        smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        smtp.send_message(msg)
+
+    print("✅ Email sent successfully.")
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5050)
+    app.run(host='0.0.0.0', port=5000)
