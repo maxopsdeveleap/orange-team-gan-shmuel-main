@@ -7,7 +7,6 @@ import os
 import csv
 import json
 import time
-import io
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "./in"
@@ -452,38 +451,36 @@ def record_weight_transaction():
         return jsonify({"error": str(e)}), 500
 
 
-#  curl -X POST http://localhost:5000/batch-weight
 @app.route("/batch-weight", methods=["POST"])
 def batch_weight():
     upload_folder = "./in"
 
-    files = os.listdir(upload_folder)
+    file_name = request.get_json().get("file")
+    file_path = os.path.join(upload_folder, file_name)
+
     containers = []
 
-    for file_name in files:
-        file_path = os.path.join(upload_folder, file_name)
-
-        if os.path.isfile(file_path):
-            if file_name.endswith('.csv'):
-                with open(file_path, 'r', encoding='utf-8') as csvfile:
-                    reader = csv.reader(csvfile)
-                    header = next(reader)
-                    unit = "kg" if "kg" in header[1].lower() else "lbs"
-                    for row in reader:
-                        if len(row) == 2:
-                            container_id, weight = row
-                            containers.append(
-                                (container_id, weight, unit))
-
-            elif file_name.endswith('.json'):
-                with open(file_path, 'r', encoding='utf-8') as jsonfile:
-                    data = json.load(jsonfile)
-                    for entry in data:
+    if os.path.isfile(file_path):
+        if file_name.endswith('.csv'):
+            with open(file_path, 'r', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                header = next(reader)
+                unit = "kg" if "kg" in header[1].lower() else "lbs"
+                for row in reader:
+                    if len(row) == 2:
+                        container_id, weight = row
                         containers.append(
-                            (entry["id"], int(entry["weight"]), entry["unit"]))
+                            (container_id, weight, unit))
 
-            else:
-                return jsonify({"error": f"Unsupported file format: {file_name}"}), 400
+        elif file_name.endswith('.json'):
+            with open(file_path, 'r', encoding='utf-8') as jsonfile:
+                data = json.load(jsonfile)
+                for entry in data:
+                    containers.append(
+                        (entry["id"], int(entry["weight"]), entry["unit"]))
+
+        else:
+            return jsonify({"error": f"Unsupported file format: {file_name}"}), 400
 
     if not containers:
         return jsonify({"error": "No valid files found"}), 400
