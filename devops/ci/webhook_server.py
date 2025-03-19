@@ -125,7 +125,7 @@ def github_webhook():
         elif action == "closed" and not payload.get("pull_request", {}).get("merged", False):
             tobranch = payload["pull_request"]["base"]["ref"]
             branch = payload["pull_request"]["head"]["ref"]
-            name = payload["pull_request"]["user"]["login"]
+            name = payload["pull_request"]["head"]["user"]["login"]
             print(f"⛓️  PR closed on branch: {tobranch} from {branch} by {name}")
 
         else:
