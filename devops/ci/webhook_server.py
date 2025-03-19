@@ -58,8 +58,9 @@ def github_webhook():
         if action == "closed" and payload.get("pull_request", {}).get("merged", False):
 
             branch = payload["pull_request"]["base"]["ref"]
+            print(branch)
 
-            commit_id = payload["head"]["sha"]
+            commit_id = payload["pull_request"]["head"]["sha"]
 
             # Run git show and capture output
             result = subprocess.run(
@@ -73,7 +74,7 @@ def github_webhook():
             output = result.stdout.strip()  # Remove extra spaces/newlines
             github_username, developer_email = output.split("|")
             
-            
+
             print(f"🔹 Merge detected on branch: {branch} by {github_username} ({developer_email})")
 
 
