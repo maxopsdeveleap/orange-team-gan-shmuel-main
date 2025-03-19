@@ -260,14 +260,14 @@ button:disabled {
   color: #c62828;
 }
 
-.dashboard-stats {
+.dashboard-stats, .dashboard-quick-search {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.stat-card, .search-card {
   background: white;
   border-radius: 8px;
   padding: 1.5rem;

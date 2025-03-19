@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import weightService from '../api/WeightService';
+import QuickSearch from './QuickSearch';
 
 const Dashboard: React.FC = () => {
   const [isHealthy, setIsHealthy] = useState(true);
@@ -47,6 +48,12 @@ const Dashboard: React.FC = () => {
               <h3>Unknown Containers</h3>
               <div className="stat-value">{unknownCount}</div>
               <Link to="/unknown" className="stat-link">View List</Link>
+            </div>
+          </div>
+
+          <div className="dashboard-quick-search">
+            <div className="search-card">
+              <QuickSearch />
             </div>
           </div>
           
