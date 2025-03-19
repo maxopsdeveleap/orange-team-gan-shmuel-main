@@ -170,6 +170,13 @@ def add_rates():
     connection = connect()
     cursor = connection.cursor()
 
+    ## Validation that spreadsheet is not empty of rows, and rates are of valid type prior to deleting all existing rows in Rates table
+    if dataframe.empty:
+        return jsonify({"error" : "Spreadsheet cannot be empty"}), 400
+    
+    if not all(dataframe["Rate"].dropna().apply(lambda x: isinstance(x, int))):
+        return jsonify({"error": "Rate values must be numbers"}), 400
+
     cursor.execute("DELETE FROM Rates")
 
     try:
@@ -198,7 +205,7 @@ def add_rates():
                 VALUES (%s, %s, %s)
                 """, (product, rate, scope))
         connection.commit()
-        return jsonify({"message": "Row added successfully"}), 200
+        return jsonify({"message": "Row added successfully"}), 201
     except Exception as e:
         return jsonify({"error": str(e)})
 
