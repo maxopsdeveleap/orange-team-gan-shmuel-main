@@ -1,34 +1,130 @@
-Payload
 
-{
 
-  "action": "closed",
+"pull_request": {
 
-  "number": 17,
+  "url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/38",
 
-  "pull_request": {
+  "id": 2403155989,
 
-    "url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/17",
+  "node_id": "PR_kwDOOJdwvs6PPUAV",
 
-    "id": 2400652087,
+  "html_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/38",
 
-    "node_id": "PR_kwDOOJdwvs6PFws3",
+  "diff_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/38.diff",
 
-    "html_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/17",
+  "patch_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/38.patch",
 
-    "diff_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/17.diff",
+  "issue_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/38",
 
-    "patch_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main/pull/17.patch",
+  "number": 38,
 
-    "issue_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/17",
+  "state": "closed",
 
-    "number": 17,
+  "locked": false,
 
-    "state": "closed",
+  "title": "fixed email sending",
 
-    "locked": false,
+  "user": {
 
-    "title": "Test3 PR to devops",
+    "login": "maxopsdeveleap",
+
+    "id": 201723823,
+
+    "node_id": "U_kgDODAYPrw",
+
+    "avatar_url": "https://avatars.githubusercontent.com/u/201723823?v=4",
+
+    "gravatar_id": "",
+
+    "url": "https://api.github.com/users/maxopsdeveleap",
+
+    "html_url": "https://github.com/maxopsdeveleap",
+
+    "followers_url": "https://api.github.com/users/maxopsdeveleap/followers",
+
+    "following_url": "https://api.github.com/users/maxopsdeveleap/following{/other_user}",
+
+    "gists_url": "https://api.github.com/users/maxopsdeveleap/gists{/gist_id}",
+
+    "starred_url": "https://api.github.com/users/maxopsdeveleap/starred{/owner}{/repo}",
+
+    "subscriptions_url": "https://api.github.com/users/maxopsdeveleap/subscriptions",
+
+    "organizations_url": "https://api.github.com/users/maxopsdeveleap/orgs",
+
+    "repos_url": "https://api.github.com/users/maxopsdeveleap/repos",
+
+    "events_url": "https://api.github.com/users/maxopsdeveleap/events{/privacy}",
+
+    "received_events_url": "https://api.github.com/users/maxopsdeveleap/received_events",
+
+    "type": "User",
+
+    "user_view_type": "public",
+
+    "site_admin": false
+
+  },
+
+  "body": "fixed script ",
+
+  "created_at": "2025-03-19T09:27:38Z",
+
+  "updated_at": "2025-03-19T09:27:47Z",
+
+  "closed_at": "2025-03-19T09:27:47Z",
+
+  "merged_at": "2025-03-19T09:27:47Z",
+
+  "merge_commit_sha": "cda446b86a9a1e9f29e90baabd286963a688bfee",
+
+  "assignee": null,
+
+  "assignees": [
+
+
+
+  ],
+
+  "requested_reviewers": [
+
+
+
+  ],
+
+  "requested_teams": [
+
+
+
+  ],
+
+  "labels": [
+
+
+
+  ],
+
+  "milestone": null,
+
+  "draft": false,
+
+  "commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/38/commits",
+
+  "review_comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/38/comments",
+
+  "review_comment_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/comments{/number}",
+
+  "comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/38/comments",
+
+  "statuses_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/statuses/d2167d35919cb5c0aa94228532b11cb85d6cb38a",
+
+  "head": {
+
+    "label": "maxopsdeveleap:test_devops",
+
+    "ref": "test_devops",
+
+    "sha": "d2167d35919cb5c0aa94228532b11cb85d6cb38a",
 
     "user": {
 
@@ -72,67 +168,19 @@ Payload
 
     },
 
-    "body": null,
+    "repo": {
 
-    "created_at": "2025-03-18T11:43:16Z",
+      "id": 949448894,
 
-    "updated_at": "2025-03-18T11:43:24Z",
+      "node_id": "R_kgDOOJdwvg",
 
-    "closed_at": "2025-03-18T11:43:24Z",
+      "name": "orange-team-gan-shmuel-main",
 
-    "merged_at": "2025-03-18T11:43:24Z",
+      "full_name": "maxopsdeveleap/orange-team-gan-shmuel-main",
 
-    "merge_commit_sha": "8f91a6a1db584b06a2670db596176dedd0e29335",
+      "private": false,
 
-    "assignee": null,
-
-    "assignees": [
-
-
-
-    ],
-
-    "requested_reviewers": [
-
-
-
-    ],
-
-    "requested_teams": [
-
-
-
-    ],
-
-    "labels": [
-
-
-
-    ],
-
-    "milestone": null,
-
-    "draft": false,
-
-    "commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/17/commits",
-
-    "review_comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/17/comments",
-
-    "review_comment_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls/comments{/number}",
-
-    "comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/17/comments",
-
-    "statuses_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/statuses/e3446cb1929b02bbff52255a9a13f9a2aa3a6879",
-
-    "head": {
-
-      "label": "maxopsdeveleap:test-branch",
-
-      "ref": "test-branch",
-
-      "sha": "e3446cb1929b02bbff52255a9a13f9a2aa3a6879",
-
-      "user": {
+      "owner": {
 
         "login": "maxopsdeveleap",
 
@@ -174,140 +222,86 @@ Payload
 
       },
 
-      "repo": {
+      "html_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main",
 
-        "id": 949448894,
+      "description": null,
 
-        "node_id": "R_kgDOOJdwvg",
+      "fork": false,
 
-        "name": "orange-team-gan-shmuel-main",
+      "url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main",
 
-        "full_name": "maxopsdeveleap/orange-team-gan-shmuel-main",
+      "forks_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/forks",
 
-        "private": false,
+      "keys_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/keys{/key_id}",
 
-        "owner": {
+      "collaborators_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/collaborators{/collaborator}",
 
-          "login": "maxopsdeveleap",
+      "teams_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/teams",
 
-          "id": 201723823,
+      "hooks_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/hooks",
 
-          "node_id": "U_kgDODAYPrw",
+      "issue_events_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/events{/number}",
 
-          "avatar_url": "https://avatars.githubusercontent.com/u/201723823?v=4",
+      "events_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/events",
 
-          "gravatar_id": "",
+      "assignees_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/assignees{/user}",
 
-          "url": "https://api.github.com/users/maxopsdeveleap",
+      "branches_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/branches{/branch}",
 
-          "html_url": "https://github.com/maxopsdeveleap",
+      "tags_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/tags",
 
-          "followers_url": "https://api.github.com/users/maxopsdeveleap/followers",
+      "blobs_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/blobs{/sha}",
 
-          "following_url": "https://api.github.com/users/maxopsdeveleap/following{/other_user}",
+      "git_tags_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/tags{/sha}",
 
-          "gists_url": "https://api.github.com/users/maxopsdeveleap/gists{/gist_id}",
+      "git_refs_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/refs{/sha}",
 
-          "starred_url": "https://api.github.com/users/maxopsdeveleap/starred{/owner}{/repo}",
+      "trees_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/trees{/sha}",
 
-          "subscriptions_url": "https://api.github.com/users/maxopsdeveleap/subscriptions",
+      "statuses_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/statuses/{sha}",
 
-          "organizations_url": "https://api.github.com/users/maxopsdeveleap/orgs",
+      "languages_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/languages",
 
-          "repos_url": "https://api.github.com/users/maxopsdeveleap/repos",
+      "stargazers_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/stargazers",
 
-          "events_url": "https://api.github.com/users/maxopsdeveleap/events{/privacy}",
+      "contributors_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/contributors",
 
-          "received_events_url": "https://api.github.com/users/maxopsdeveleap/received_events",
+      "subscribers_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/subscribers",
 
-          "type": "User",
+      "subscription_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/subscription",
 
-          "user_view_type": "public",
+      "commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/commits{/sha}",
 
-          "site_admin": false
+      "git_commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/commits{/sha}",
 
-        },
+      "comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/comments{/number}",
 
-        "html_url": "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main",
+      "issue_comment_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/comments{/number}",
 
-        "description": null,
+      "contents_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/contents/{+path}",
 
-        "fork": false,
+      "compare_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/compare/{base}...{head}",
 
-        "url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main",
+      "merges_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/merges",
 
-        "forks_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/forks",
+      "archive_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/{archive_format}{/ref}",
 
-        "keys_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/keys{/key_id}",
+      "downloads_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/downloads",
 
-        "collaborators_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/collaborators{/collaborator}",
+      "issues_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues{/number}",
 
-        "teams_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/teams",
+      "pulls_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls{/number}",
 
-        "hooks_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/hooks",
+      "milestones_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/milestones{/number}",
 
-        "issue_events_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/events{/number}",
+      "notifications_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/notifications{?since,all,participating}",
 
-        "events_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/events",
+      "labels_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/labels{/name}",
 
-        "assignees_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/assignees{/user}",
+      "releases_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/releases{/id}",
 
-        "branches_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/branches{/branch}",
+      "deployments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/deployments",
 
-        "tags_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/tags",
+      "created_at": "2025-03-16T13:45:54Z",
 
-        "blobs_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/blobs{/sha}",
-
-        "git_tags_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/tags{/sha}",
-
-        "git_refs_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/refs{/sha}",
-
-        "trees_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/trees{/sha}",
-
-        "statuses_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/statuses/{sha}",
-
-        "languages_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/languages",
-
-        "stargazers_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/stargazers",
-
-        "contributors_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/contributors",
-
-        "subscribers_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/subscribers",
-
-        "subscription_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/subscription",
-
-        "commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/commits{/sha}",
-
-        "git_commits_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/git/commits{/sha}",
-
-        "comments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/comments{/number}",
-
-        "issue_comment_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues/comments{/number}",
-
-        "contents_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/contents/{+path}",
-
-        "compare_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/compare/{base}...{head}",
-
-        "merges_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/merges",
-
-        "archive_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/{archive_format}{/ref}",
-
-        "downloads_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/downloads",
-
-        "issues_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/issues{/number}",
-
-        "pulls_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/pulls{/number}",
-
-        "milestones_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/milestones{/number}",
-
-        "notifications_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/notifications{?since,all,participating}",
-
-        "labels_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/labels{/name}",
-
-        "releases_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/releases{/id}",
-
-        "deployments_url": "https://api.github.com/repos/maxopsdeveleap/orange-team-gan-shmuel-main/deployments",
-
-        "created_at": "2025-03-16T13:45:54Z",
-
-        "updated_at": "2025...
+      "updated_at&quo...

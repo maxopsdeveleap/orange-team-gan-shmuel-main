@@ -73,10 +73,7 @@ def github_webhook():
             output = result.stdout.strip()  # Remove extra spaces/newlines
             github_username, developer_email = output.split("|")
             
-
-
-
-
+            
             print(f"🔹 Merge detected on branch: {branch} by {github_username} ({developer_email})")
 
 
