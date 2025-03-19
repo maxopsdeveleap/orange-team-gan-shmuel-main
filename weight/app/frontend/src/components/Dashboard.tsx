@@ -50,20 +50,6 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="quick-actions">
-            <h2>Quick Actions</h2>
-            <div className="action-buttons">
-              <Link to="/weight/new" className="action-button">
-                Record New Weight
-              </Link>
-              <Link to="/weights" className="action-button">
-                View Weight Records
-              </Link>
-              <Link to="/batch-upload" className="action-button">
-                Batch Upload
-              </Link>
-            </div>
-          </div>
         </>
       )}
     </div>
