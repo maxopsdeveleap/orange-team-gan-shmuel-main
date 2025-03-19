@@ -1,8 +1,5 @@
 import requests
-import json
 import os
-import pandas as pd
-from io import BytesIO
 
 def run_post_rates_check():
     url = "http://localhost:5000/rates"
@@ -13,7 +10,9 @@ def run_post_rates_check():
     ]
     headers = {}
     
+    current_dir = os.getcwd()
+    print("Current Directory:", current_dir)
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
-    
+
     print(response.text)
     print("✅ All tests passed successfully!")
