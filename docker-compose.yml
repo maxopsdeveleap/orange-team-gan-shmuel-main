@@ -35,11 +35,11 @@ services:
 
   weight_app:
     build: ./weight
-    container_name: weight_db
+    container_name: weight_app
     ports:
       - "5001:5000"
     environment:
-      MYSQL_HOST: weight_app
+      MYSQL_HOST: weight_db
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
     volumes:
