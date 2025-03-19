@@ -63,6 +63,8 @@ def github_webhook():
             commit_id = payload["pull_request"]["head"]["sha"]
 
             # Run git show and capture output
+            subprocess.run(["git", "fetch", "--all"], check=True) # to get all the commits
+            
             result = subprocess.run(
                 ["git", "-C", LOCAL_REPO_PATH, "show", "--no-patch", "--pretty=format:%an|%ae", commit_id],
                 capture_output=True,
@@ -119,7 +121,15 @@ def github_webhook():
                 )
 
                 return jsonify({"message": "CI pipeline failed", "error": str(e)}), 500
+        else:
+            tobranch = payload["pull_request"]["base"]["ref"]
+            branch = payload["pull_request"]["head"]["label"]
+            list = branch.split(":")
+            branch = list[1]
+            name = list[0]
 
+            commit_id = payload["pull_request"]["head"]["sha"]
+            print(f"🚀 PR detected on branch: {tobranch} from {branch} by {name}")
 
 
     return jsonify({"message": "Not a relevant event"}), 200
