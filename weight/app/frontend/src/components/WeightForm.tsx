@@ -30,15 +30,21 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
       }
 
       // Prepare data for API
-      const formData = {
+      let formData = {
+
+        ...(direction !== "out" && {
+          containers,
+          produce: produce || 'na',
+        }),
+
         direction,
         truck: truck || 'na',
-        containers: containers,
         weight: parseInt(weight, 10),
         unit,
         force,
-        produce: produce || 'na'
+        
       };
+
 
       // Make API call
       const response = await weightService.createWeight(formData);
@@ -97,16 +103,20 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="containers">Containers:</label>
-          <input
-            id="containers"
-            type="text"
-            value={containers}
-            onChange={(e) => setContainers(e.target.value)}
-            placeholder="Container IDs (comma-separated)"
-          />
-        </div>
+        {direction !== 'out' && (
+          <div className="form-group">
+            <label htmlFor="containers">Containers:</label>
+            <input
+              id="containers"
+              type="text"
+              value={containers}
+              onChange={(e) => setContainers(e.target.value)}
+              placeholder="Container IDs (comma-separated)"
+            />
+          </div>
+        )}
+
+        
 
         <div className="form-group">
           <label htmlFor="weight">Weight:</label>
@@ -120,6 +130,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           />
         </div>
 
+        
         <div className="form-group">
           <label htmlFor="unit">Unit:</label>
           <select
@@ -132,16 +143,21 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="produce">Produce:</label>
-          <input
-            id="produce"
-            type="text"
-            value={produce}
-            onChange={(e) => setProduce(e.target.value)}
-            placeholder="e.g., orange, tomato, or 'na'"
-          />
-        </div>
+        {direction !== 'out' && (
+
+            <div className="form-group">
+              <label htmlFor="produce">Produce:</label>
+              <input
+                id="produce"
+                type="text"
+                value={produce}
+                onChange={(e) => setProduce(e.target.value)}
+                placeholder="e.g., orange, tomato, or 'na'"
+              />
+            </div>
+        )}
+
+        
 
         <div className="form-group checkbox">
           <input

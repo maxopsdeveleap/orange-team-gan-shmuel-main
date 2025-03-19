@@ -15,11 +15,11 @@ const api = axios.create({
 export interface WeightData {
   direction: 'in' | 'out' | 'none';
   truck: string;
-  containers: string;
+  containers?: string;
   weight: number;
-  unit: 'kg' | 'lbs';
+  unit?: 'kg' | 'lbs';
   force: boolean;
-  produce: string;
+  produce?: string;
 }
 
 export interface WeightResponse {
