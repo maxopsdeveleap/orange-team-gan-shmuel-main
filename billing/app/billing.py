@@ -310,7 +310,7 @@ def get_truck_info(id):
 
     try:
         # Production API URL (configurable via environment variable)
-        production_api_url = os.getenv("PRODUCTION_API_URL", "http://weight_app:5001/truck")
+        production_api_url = os.getenv("PRODUCTION_API_URL", "http://weight_app:5001/item")
         logger.info(f"Calling production API for truck {id} from {from_date} to {to_date}")
 
         # Make a request to the production API
