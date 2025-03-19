@@ -81,11 +81,12 @@ def github_webhook():
 
             try:
 
-                pull_latest_code()
+                pull_latest_code(branch)
 
-                run_ci_pipeline(branch)
+                run_ci_pipeline(branch,github_username,developer_email)
 
-                send_email(
+                if branch == "billing" or branch == "weight" or branch == "devops":
+                    send_email(
 
                     subject=f"✅ CI Success for {branch} by {github_username}",
 
@@ -93,7 +94,10 @@ def github_webhook():
 
                     receiver=developer_email
 
-                )
+                     )
+                e
+
+
 
                 return jsonify({"message": "CI pipeline ran successfully"}), 200
 
@@ -123,7 +127,7 @@ def github_webhook():
 
 
 
-def pull_latest_code():
+def pull_latest_code(branch):
 
     if not os.path.exists(LOCAL_REPO_PATH):
 
@@ -137,11 +141,13 @@ def pull_latest_code():
 
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)
 
-        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull"], check=True)
+        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "checkout", branch], check=True) # to ensure we pull from the right branch
+
+        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull", "origin", branch], check=True)  # Pull specific branch
 
 
 
-def run_ci_pipeline(branch):
+def run_ci_pipeline(branch,github_username,developer_email):
 
     print(f"🔧 Running CI pipeline for branch: {branch}")
 
@@ -176,8 +182,8 @@ def run_ci_pipeline(branch):
         subprocess.run(["docker-compose", "down"], cwd=service_path, check=True)
 
 
-
     print("✅ CI pipeline completed successfully.")
+
 
 
 
