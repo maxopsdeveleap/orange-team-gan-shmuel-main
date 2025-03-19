@@ -153,7 +153,7 @@ def pull_latest_code(branch):
 
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)
 
-        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "checkout", branch], check=True) # to ensure we pull from the right branch
+        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "checkout", "--track", "-B", branch, "origin/" + branch], check=True) # to ensure we pull from the right branch
 
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull", "origin", branch], check=True)  # Pull specific branch
 
