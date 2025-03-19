@@ -95,6 +95,7 @@ def update_provider(provider_id):
         cursor.close()
         connection.close()
 
+
 @app.route('/truck/<id>', methods=['PUT'])
 def update_truck(id):
    data = request.get_json()
@@ -140,7 +141,8 @@ def get_rates():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-   
+
+
 @app.route('/rates', methods=['POST'])
 def add_rates():
     if "file" not in request.files:
@@ -208,11 +210,11 @@ def add_rates():
         return jsonify({"message": "Row added successfully"}), 201
     except Exception as e:
         return jsonify({"error": str(e)})
-
-
-
-
-
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 
 # POST /truck - Register a truck
