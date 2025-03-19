@@ -39,7 +39,7 @@ services:
     ports:
       - "5001:5000"
     environment:
-      MYSQL_HOST: weight_db
+      MYSQL_HOST: weight_app
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
     volumes:
