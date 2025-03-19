@@ -1,6 +1,7 @@
 services:
   billing_app:
     build: ./billing
+    container_name: billing_app
     ports:
       - "5000:5000"
     environment:
@@ -34,6 +35,7 @@ services:
 
   weight_app:
     build: ./weight
+    container_name: weight_db
     ports:
       - "5001:5000"
     environment:
