@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 
-LOCAL_REPO_PATH = "/home/andi-shobash/Desktop/orange-team-gan-shmuel-main"
+LOCAL_REPO_PATH = "/home/andishobash/Desktop/orange-team-gan-shmuel-main"
 
 SERVICES = ["weight", "billing"]
 
@@ -59,11 +59,11 @@ def github_webhook():
 
             branch = payload["pull_request"]["base"]["ref"]
 
-            commit_id = payload["head"]["user"]["sha"]
+            commit_id = payload["head"]["sha"]
 
             # Run git show and capture output
             result = subprocess.run(
-                ["git", "-C", LOCAL_REPO_PATH, "show", "--no-patch", "--pretty=format:%an|%ae"],  # Get Author Name and Email
+                ["git", "-C", LOCAL_REPO_PATH, "show", "--no-patch", "--pretty=format:%an|%ae", commit_id],
                 capture_output=True,
                 text=True,
                 check=True
