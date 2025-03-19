@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 from datetime import datetime
 import mysqlweight
 
@@ -11,6 +12,7 @@ import routes_functions.post_batch_weight
 
 
 app = Flask(__name__)
+CORS(app)
 
 # @app.route("/", methods=["GET"])
 # def home():
