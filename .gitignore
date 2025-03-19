@@ -22,3 +22,7 @@ build/
 secrets/
 *.pem
 *.key
+
+# weight react frontend
+/weight/app/frontend/node_modules
+/weight/app/frontend/.vite
