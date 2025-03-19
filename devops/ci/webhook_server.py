@@ -121,14 +121,17 @@ def github_webhook():
                 )
 
                 return jsonify({"message": "CI pipeline failed", "error": str(e)}), 500
+            
+        elif action == "closed" and not payload.get("pull_request", {}).get("merged", False):
+            tobranch = payload["pull_request"]["base"]["ref"]
+            branch = payload["pull_request"]["head"]["ref"]
+            name = payload["pull_request"]["user"]["login"]
+            print(f"⛓️  PR closed on branch: {tobranch} from {branch} by {name}")
+
         else:
             tobranch = payload["pull_request"]["base"]["ref"]
-            branch = payload["pull_request"]["head"]["label"]
-            list = branch.split(":")
-            branch = list[1]
-            name = list[0]
-
-            commit_id = payload["pull_request"]["head"]["sha"]
+            branch = payload["pull_request"]["head"]["ref"]
+            name = payload["pull_request"]["user"]["login"]
             print(f"🚀 PR detected on branch: {tobranch} from {branch} by {name}")
 
 
@@ -150,7 +153,7 @@ def pull_latest_code(branch):
 
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "fetch"], check=True)
 
-        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "checkout", branch], check=True) # to ensure we pull from the right branch
+        subprocess.run(["git", "-C", LOCAL_REPO_PATH, "checkout", "--track", "-B", branch, "origin/" + branch], check=True) # to ensure we pull from the right branch
 
         subprocess.run(["git", "-C", LOCAL_REPO_PATH, "pull", "origin", branch], check=True)  # Pull specific branch
 
