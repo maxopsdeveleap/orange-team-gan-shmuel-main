@@ -21,6 +21,7 @@ build/
 # Secrets / credentials (if generated locally for testing)
 secrets/
 *.pem
+
 *.key
 
 # Docker-related artifacts (cache, volumes, etc.)

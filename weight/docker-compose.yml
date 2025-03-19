@@ -8,7 +8,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
     volumes:
-      - ./in:/in
+      - ./in:/app/in
     depends_on:
       - db
     restart: on-failure
