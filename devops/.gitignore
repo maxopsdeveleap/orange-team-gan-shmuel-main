@@ -22,3 +22,11 @@ build/
 secrets/
 *.pem
 *.key
+
+# Docker-related artifacts (cache, volumes, etc.)
+docker-compose.override.yml
+.docker/
+
+# Test reports and artifacts
+test-reports/
+coverage/
