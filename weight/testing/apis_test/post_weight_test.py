@@ -3,9 +3,18 @@ import json
 import sys
 
 
+def convert_to_kg(weight, unit="lbs"):
+    if unit.lower() == "lbs":
+        return weight * 0.453592
+    return weight
+
+
 def run_post_weight_check():
     BASE_URL = "http://127.0.0.1:5000"
     path = "weight"
+
+    # Conversion function for pounds to kilograms
+    lbs_to_kg = lambda lbs: round(lbs * 0.453592, 2)
 
     checks = [
         {
@@ -30,7 +39,7 @@ def run_post_weight_check():
             "payload": {
                 "direction": "in",
                 "truck": "test123",
-                "containers": "C-35434,K-4109",
+                "containers": "C-35434,K-4109", #296kg, 587 lbs
                 "weight": 16000,
                 "unit": "kg",
                 "force": True,
@@ -56,7 +65,7 @@ def run_post_weight_check():
                 "bruto": 16000,
                 "id": int,
                 "truckTara": 12000,
-                "neto": int,
+                "neto": 16000-12000 - convert_to_kg(587)-296,
                 "truck": "test123"
             },
             "status": 201
@@ -93,6 +102,36 @@ def run_post_weight_check():
                 "truckTara": 20000,
                 "neto": 'na',
                 "truck": "test456"
+            },
+            "status": 201
+        },
+        {
+            "payload": {
+                "direction": "none",
+                "containers": "C1",
+                "weight": 1000,
+                "unit": "kg",
+                "force": False,
+            },
+            "expected": {
+                "bruto": 1000,
+                "id": "C1",
+                "truck": "na"
+            },
+            "status": 201
+        },
+        {
+            "payload": {
+                "direction": "none",
+                "containers": "C2",
+                "weight": 1000,
+                "unit": "lbs",
+                "force": False,
+            },
+            "expected": {
+                "bruto": convert_to_kg(1000),
+                "id": "C2",
+                "truck": "na"
             },
             "status": 201
         },
@@ -143,6 +182,7 @@ def run_post_weight_check():
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}{response_json}")
+                print(f"Error message: {res.text}")
                 sys.exit(1)
 
         except requests.exceptions.RequestException as e:
