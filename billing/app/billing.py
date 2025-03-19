@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 RATES_FOLDER= os.path.abspath(os.path.join(os.path.dirname(__file__), "..","in"))
 app.config["RATES_FOLDER_PATH"] = RATES_FOLDER
+app.config["EXTERNAL_API"] = "http://weight_app:5000"
 
 
 @app.route('/health', methods=['GET'])
@@ -350,6 +351,128 @@ def get_truck_info(id):
 def truck_info_test_page():
     """Serve the truck information test page HTML"""
     return render_template('truck_info_test.html')
+
+@app.route('/bill/<id>', methods=['GET'])
+def get_bill(id):
+    provider_id = id
+    provider_name = ""
+    truck_count = 0
+    truck_ids = []
+    session_count = 0
+    products = []
+    total = 0
+
+    now = datetime.now()
+    first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    fromValue = request.args.get("from", first_of_month.strftime("%Y%m%d000000"))
+    toValue = request.args.get("to", now.strftime("%Y%m%d%H%M%S"))
+
+    formattedFromValue = datetime.strptime(fromValue, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    formattedToValue = datetime.strptime(toValue, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+
+    
+
+    try:
+        connection = connect()
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT id FROM Provider WHERE id = %s", (provider_id,))
+        if not cursor.fetchone():
+           return jsonify({"error": "Invalid provider ID"}), 400
+        else:
+           cursor.execute("SELECT name FROM Provider WHERE id = %s", (provider_id,))
+           provider_name = cursor.fetchone()[0]
+
+        cursor.execute("SELECT * FROM Trucks WHERE provider_id = %s", (provider_id,))
+        trucks = cursor.fetchall()
+        truck_count = len(trucks)
+        truck_ids = [truck[0] for truck in trucks] if trucks else []
+
+
+        if not truck_ids:
+            return jsonify({
+                "id": provider_id,
+                "name": provider_name,
+                "from": formattedFromValue,
+                "to": formattedToValue,
+                "truckCount": 0,
+                "sessionCount": 0,
+                "products": [{"product": "None", "count": 0, "amount": 0, "rate": 0, "pay": 0}],
+                "total": 0
+            }), 200
+
+        for truck_id in truck_ids:
+            try:
+                res = requests.get(f"{app.config['EXTERNAL_API']}/item/{truck_id}?from={formattedFromValue}&to={formattedToValue}")
+                res.raise_for_status()
+                data = res.json()
+
+                if "sessions" in data and len(data["sessions"]) > 0:
+                    session_count += len(data["sessions"])
+
+                    for session_id in data["sessions"]:
+                        try:
+                            response = requests.get(f"{app.config['EXTERNAL_API']}/session/{session_id}")
+                            response.raise_for_status()
+                            session_data = response.json()
+                            product = session_data["produce"]
+
+                            if session_data["neto"] == "na":
+                                products.append({
+                                    "product": product,
+                                    "count": 1,
+                                    "amount": 0,
+                                    "rate": 0,
+                                    "pay": 0})
+                            else:
+                                amount = session_data["neto"]
+                                cursor.execute("""
+                                    SELECT rate FROM Rates 
+                                    WHERE product_id = %s AND (scope = %s OR scope = 'ALL')
+                                    ORDER BY (scope = %s) DESC
+                                    LIMIT 1
+                                """, (product, provider_id, provider_id))
+
+                                rate_result= cursor.fetchone()
+                                print(f"Warning: No rate found for product {product}, setting rate to 0")
+                                rate = rate_result[0] if rate_result else 0
+
+                                pay = amount * rate
+                                found = False
+                                for prod in products:
+                                    if prod["product"] == product:
+                                        prod["count"] += 1
+                                        prod["amount"] += amount
+                                        prod["pay"] += pay
+                                        found = True
+                                        break
+                                if not found:
+                                    products.append({
+                                        "product": product,
+                                        "count": 1,
+                                        "amount": amount,
+                                        "rate": rate,
+                                        "pay": pay
+                                    })
+                                total += pay
+                        except requests.exceptions.RequestException:
+                            continue
+            except requests.exceptions.RequestException:
+                continue
+        return jsonify({
+            "id": provider_id,
+            "name": provider_name,
+            "from": formattedFromValue,
+            "to": formattedToValue,
+            "truckCount": truck_count,
+            "sessionCount": session_count,
+            "products": products if len(products) > 0 else [{"product": "None", "count": 0,"amount": 0, "rate": 0, "pay": 0}]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 
 if __name__ == '__main__':
