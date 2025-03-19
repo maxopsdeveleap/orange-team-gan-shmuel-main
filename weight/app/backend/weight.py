@@ -1,12 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request
 from datetime import datetime
 import mysqlweight
-import time
-import mysql.connector
-import os
-import csv
-import json
-import time
 
 import routes_functions.get_weight
 import routes_functions.get_item
