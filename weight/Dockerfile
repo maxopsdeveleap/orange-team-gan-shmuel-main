@@ -6,6 +6,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && adduser -D -h /home/buser buser
 
 USER buser
-COPY app/* .
+COPY app .
 
-ENTRYPOINT ["python", "weight.py"]
+ENTRYPOINT ["python", "backend/weight.py"]
