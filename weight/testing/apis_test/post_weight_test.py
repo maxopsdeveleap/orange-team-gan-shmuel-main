@@ -1,5 +1,6 @@
 import requests
 import json
+import sys
 
 
 def run_post_weight_check():
@@ -114,6 +115,7 @@ def run_post_weight_check():
                     if missing_keys:
                         print(
                             f"❌ Test Failed: Missing keys {missing_keys} in response {response_json}")
+                        sys.exit(1)
                         continue
 
                     mismatches = {
@@ -131,14 +133,18 @@ def run_post_weight_check():
                     else:
                         print(
                             f"❌ Test Failed: Mismatched values {mismatches} in response {response_json}")
+                        sys.exit(1)
 
                 except json.JSONDecodeError:
                     print(
                         f"❌ Test Failed: Response is not valid JSON -> {res.text}")
+                    sys.exit(1)
 
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}{response_json}")
+                sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
+            sys.exit(1)
