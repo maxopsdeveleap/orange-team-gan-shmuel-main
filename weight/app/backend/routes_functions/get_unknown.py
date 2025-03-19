@@ -27,6 +27,9 @@ def get_unknown():
             for container in json.loads(transaction["containers"]):
                 container_ids.add(container)
 
+        if not container_ids:
+            return jsonify([])
+
         # return jsonify({"len": len(container_ids)}), 200
 
         query = f"""
