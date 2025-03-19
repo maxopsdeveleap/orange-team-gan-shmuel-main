@@ -1,7 +1,11 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 from mysqlbilling import connect
+import requests
+from datetime import datetime
+import logging
 import os
 import pandas as pd
+
 
 app = Flask(__name__)
 
@@ -172,6 +176,13 @@ def add_rates():
     connection = connect()
     cursor = connection.cursor()
 
+    ## Validation that spreadsheet is not empty of rows, and rates are of valid type prior to deleting all existing rows in Rates table
+    if dataframe.empty:
+        return jsonify({"error" : "Spreadsheet cannot be empty"}), 400
+    
+    if not all(dataframe["Rate"].dropna().apply(lambda x: isinstance(x, int))):
+        return jsonify({"error": "Rate values must be numbers"}), 400
+
     cursor.execute("DELETE FROM Rates")
 
     try:
@@ -200,7 +211,7 @@ def add_rates():
                 VALUES (%s, %s, %s)
                 """, (product, rate, scope))
         connection.commit()
-        return jsonify({"message": "Row added successfully"}), 200
+        return jsonify({"message": "Row added successfully"}), 201
     except Exception as e:
         return jsonify({"error": str(e)})
     finally:
@@ -218,10 +229,10 @@ def register_truck():
 
     # Validate input
     if not data or 'provider_id' not in data or 'id' not in data:
-        return jsonify({"error": "Missing required fields: 'provider_id' and 'truck_id'"}), 400
+        return jsonify({"error": "Missing required fields: 'provider_id' and 'id'"}), 400
 
     provider_id = data['provider_id']  # Provider's ID
-    license_number = data['id']  # Truck's license plate (truck_id)
+    license_number = data['id']  # Truck's license plate (id)
 
     connection = None
     cursor = None
@@ -263,6 +274,274 @@ def register_truck():
         if connection:
             connection.close()
 
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.route('/truck/<id>', methods=['GET'])
+def get_truck_info(id):
+
+    logger.info(f"Getting information for truck: {id}")
+
+    # Get query parameters with defaults
+    from_date = request.args.get('from', None)
+    to_date = request.args.get('to', None)
+
+    # Set default values if not provided
+    now = datetime.now()
+    if not from_date:
+        # Default is 1st of current month at 000000
+        from_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y%m%d%H%M%S")
+        logger.info(f"Using default from_date: {from_date}")
+
+    if not to_date:
+        # Default is now
+        to_date = now.strftime("%Y%m%d%H%M%S")
+        logger.info(f"Using default to_date: {to_date}")
+
+    try:
+        # Validate the date format
+        datetime.strptime(from_date, "%Y%m%d%H%M%S")
+        datetime.strptime(to_date, "%Y%m%d%H%M%S")
+    except ValueError:
+        logger.error(f"Invalid date format: from_date={from_date}, to_date={to_date}")
+        return jsonify({"error": "Invalid date format. Use yyyymmddhhmmss"}), 400
+
+    try:
+        # Production API URL (configurable via environment variable)
+        production_api_url = os.getenv("PRODUCTION_API_URL", "http://weight_app:5000/item")
+        logger.info(f"Calling production API for truck {id} from {from_date} to {to_date}")
+
+        # Make a request to the production API
+        response = requests.get(
+            f"{production_api_url}/{id}",
+            params={"from": from_date, "to": to_date},
+            timeout=int(os.getenv("REQUEST_TIMEOUT", "10"))  # Configurable timeout
+        )
+
+        # Handle response from production API
+        if response.status_code == 404:
+            logger.warning(f"Truck {id} not found in production database")
+            return jsonify({"error": "Truck not found"}), 404
+
+        if response.status_code != 200:
+            logger.error(f"Production API error: {response.status_code} - {response.text}")
+            return jsonify({"error": "Error retrieving truck information from production"}), 502
+
+        # Validate the response from the production API
+        truck_data = response.json()
+        if not all(key in truck_data for key in ["id", "tara", "sessions"]):
+            logger.error(f"Invalid response from production API: {truck_data}")
+            return jsonify({"error": "Invalid data received from production API"}), 502
+
+        logger.info(f"Successfully retrieved data for truck {id}")
+        return jsonify(truck_data), 200
+
+    except requests.RequestException as e:
+        logger.error(f"Request error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Failed to connect to production API"}), 503
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Failed to process truck information request"}), 500
+
+
+@app.route('/bill/<id>', methods=['GET'])
+def get_bill(id):
+    """Retrieve billing details for a provider within a given timeframe"""
+    
+    # Step 1: Validate provider exists
+    connection = connect()
+    cursor = connection.cursor()
+    
+    try:
+        # Check if provider exists and get name
+        cursor.execute("SELECT name FROM Providers WHERE id = %s", (id,))
+        provider_result = cursor.fetchone()
+        if not provider_result:
+            return jsonify({"error": f"Provider with ID {id} not found"}), 404
+        
+        provider_name = provider_result[0]
+        
+        # Step 2: Extract query parameters with proper defaults
+        from_date = request.args.get('from')
+        to_date = request.args.get('to')
+        
+        # Default time values
+        now = datetime.now()
+        if not from_date:
+            from_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y%m%d%H%M%S")
+        if not to_date:
+            to_date = now.strftime("%Y%m%d%H%M%S")
+            
+        try:
+            datetime.strptime(from_date, "%Y%m%d%H%M%S")
+            datetime.strptime(to_date, "%Y%m%d%H%M%S")
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use yyyymmddhhmmss"}), 400
+        
+        # Step 3: Fetch Trucks for Provider
+        cursor.execute("SELECT id FROM Trucks WHERE provider_id = %s", (id,))
+        trucks = [row[0] for row in cursor.fetchall()]
+        
+        if not trucks:
+            return jsonify({
+                "id": id,
+                "name": provider_name,
+                "from": from_date,
+                "to": to_date,
+                "truckCount": 0,
+                "sessionCount": 0,
+                "products": [],
+                "total": 0
+            }), 200
+        
+        # Step 4: Retrieve Session IDs for Each Truck
+        weight_sessions = []
+
+        for truck in trucks:
+            try:
+                # Call GET /item to retrieve session IDs for this truck
+                response = requests.get(
+                    f"http://weight_app:5000/item/{truck}",
+                    params={"from": from_date, "to": to_date},
+                    timeout=10
+                )
+                response.raise_for_status()  # This will raise an HTTPError for bad responses (4xx, 5xx)
+                
+                # Extract session IDs from the response
+                truck_data = response.json()
+                session_ids = truck_data.get("sessions", [])
+                
+                # For each session ID, call GET /session to retrieve detailed session information
+                for session_id in session_ids:
+                    session_response = requests.get(
+                        f"http://weight_app:5000/session/{session_id}",
+                        timeout=10
+                    )
+                    session_response.raise_for_status()
+                    
+                    session_data = session_response.json()
+                    
+                    # Only include sessions with valid net weight
+                    if session_data.get("neto") != "na":
+                        weight_sessions.append(session_data)
+
+            except requests.exceptions.Timeout:
+                logger.error(f"Weight API request timed out for truck {truck}")
+                continue  # Skip this truck and proceed with the next one
+            except requests.exceptions.ConnectionError:
+                logger.error(f"Failed to connect to Weight API for truck {truck}")
+                continue  # Skip this truck and proceed with the next one
+            except requests.exceptions.HTTPError as e:
+                logger.error(f"Weight API returned an error for truck {truck}: {str(e)}")
+                continue  # Skip this truck and proceed with the next one
+            except Exception as e:
+                logger.error(f"Unexpected error for truck {truck}: {str(e)}")
+                continue  # Skip this truck and proceed with the next one
+        
+        # Step 5: Aggregate Session Data
+        product_data = {}
+        for session in weight_sessions:
+            product = session.get("produce")
+            if product == "na" or not product:
+                continue
+                
+            neto = session.get("neto", 0)
+            if isinstance(neto, str):
+                continue  # Skip if neto is "na"
+                
+            if product not in product_data:
+                product_data[product] = {"count": 0, "amount": 0}
+            
+            product_data[product]["count"] += 1
+            product_data[product]["amount"] += neto
+        
+        # Step 6: Retrieve Rates from database
+        try:
+            # First, try to get provider-specific rates
+            cursor.execute(
+                "SELECT product_id, rate FROM Rates WHERE scope = %s OR scope = 'ALL' ORDER BY CASE WHEN scope = %s THEN 1 ELSE 2 END",
+                (id, id)
+            )
+            
+            # This query will return provider-specific rates first, then 'ALL' rates
+            # The ORDER BY ensures provider-specific rates come first
+            
+            rates_result = cursor.fetchall()
+            
+            if not rates_result:
+                return jsonify({"error": f"No rates found for provider {id} or 'ALL' in the system"}), 500
+                
+            # Create a dictionary to store rates with product_id as key
+            # If we have duplicates, the first one (provider-specific) will be kept
+            rates_dict = {}
+            for product_id, rate in rates_result:
+                if product_id not in rates_dict:
+                    rates_dict[product_id] = rate
+                
+        except Exception as e:
+            logger.error(f"Error retrieving rates from database: {str(e)}")
+            return jsonify({"error": f"Error retrieving rates from database: {str(e)}"}), 500
+                
+        
+        # Step 7: Calculate Pay
+        total_pay = 0
+        detailed_products = []
+
+        for product, data in product_data.items():
+            # Check if we have a rate for this product
+            if product in rates_dict:
+                product_rate = rates_dict[product]
+                
+                # Validate the rate
+                if product_rate is None or product_rate < 0:
+                    logger.warning(f"Invalid rate for product {product}: {product_rate}")
+                    continue
+                
+                # Calculate pay in agorot (as specified in the API doc)
+                pay = int(data['amount'] * product_rate)  # Convert to agorot (integer)
+                
+                detailed_products.append({
+                    "product": product,
+                    "count": data['count'],
+                    "amount": data['amount'],
+                    "rate": int(product_rate),
+                    "pay": pay
+                })
+                
+                total_pay += pay
+            else:
+                # Log that we couldn't find a rate for this product
+                logger.warning(f"No rate found for product {product}")
+        
+        # Step 8: Format and Return Response
+        return jsonify({
+            "id": id,
+            "name": provider_name,
+            "from": from_date,
+            "to": to_date,
+            "truckCount": len(trucks),
+            "sessionCount": len(weight_sessions),
+            "products": detailed_products,
+            "total": total_pay
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+@app.route('/truck-info-test', methods=['GET'])
+def truck_info_test_page():
+    """Serve the truck information test page HTML"""
+    return render_template('truck_info_test.html')
 
 
 if __name__ == '__main__':
