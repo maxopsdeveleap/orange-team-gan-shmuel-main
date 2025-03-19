@@ -126,7 +126,7 @@ def github_webhook():
             tobranch = payload["pull_request"]["base"]["ref"]
             branch = payload["pull_request"]["head"]["ref"]
             name = payload["pull_request"]["user"]["login"]
-            print(f"⛓️ PR closed on branch: {tobranch} from {branch} by {name}")
+            print(f"⛓️  PR closed on branch: {tobranch} from {branch} by {name}")
 
         else:
             tobranch = payload["pull_request"]["base"]["ref"]
