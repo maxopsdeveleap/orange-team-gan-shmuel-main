@@ -33,7 +33,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
       const formData = {
         direction,
         truck: truck || 'na',
-        containers: containers ? containers.split(',').map(c => c.trim()) : [],
+        containers: containers,
         weight: parseInt(weight, 10),
         unit,
         force,
