@@ -3,6 +3,11 @@ from datetime import datetime
 import mysqlweight
 import json
 
+def convert_to_kg(weight, unit):
+    """Convert weight to kg if unit is lbs"""
+    if unit and unit.lower() == 'lbs':
+        return weight * 0.453592  # 1 lb = 0.453592 kg
+    return weight
 
 def handle_weight_in(cursor, connection, data, direction, truck, containers):
     # Check for existing recent transaction for this truck/direction
@@ -127,11 +132,12 @@ def handle_weight_out(cursor, connection, data, truck):
             if not container_record:
                 total_container_tara = None
                 break
-            total_container_tara += container_record['weight']
+            weight = convert_to_kg(container_record['weight'], container_record['unit'])
+            total_container_tara += weight
 
     # Prepare out transaction
     now = datetime.now()
-    out_weight = data['weight']
+    out_weight = convert_to_kg(data['weight'], data['unit'])
 
     # Calculate neto
     if truck != 'na':
