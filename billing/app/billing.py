@@ -357,7 +357,7 @@ def get_bill(id):
     
     try:
         # Check if provider exists and get name
-        cursor.execute("SELECT name FROM Providers WHERE id = %s", (id,))
+        cursor.execute("SELECT name FROM Provider WHERE id = %s", (id,))
         provider_result = cursor.fetchone()
         if not provider_result:
             return jsonify({"error": f"Provider with ID {id} not found"}), 404
