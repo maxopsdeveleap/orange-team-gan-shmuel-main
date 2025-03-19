@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports:
-      - "5002:5000"
+      - "5000:5000"
     environment:
       MYSQL_HOST: db
       MYSQL_USER: root
