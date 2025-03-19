@@ -491,31 +491,39 @@ def get_bill(id):
         detailed_products = []
 
         for product, data in product_data.items():
-            # Check if we have a rate for this product
-            if product in rates_dict:
-                product_rate = rates_dict[product]
-                
-                # Validate the rate
-                if product_rate is None or product_rate < 0:
-                    logger.warning(f"Invalid rate for product {product}: {product_rate}")
-                    continue
-                
-                # Calculate pay in agorot (as specified in the API doc)
-                pay = int(data['amount'] * product_rate)  # Convert to agorot (integer)
-                
-                detailed_products.append({
-                    "product": product,
-                    "count": data['count'],
-                    "amount": data['amount'],
-                    "rate": int(product_rate),
-                    "pay": pay
-                })
-                
-                total_pay += pay
-            else:
-                # Log that we couldn't find a rate for this product
+            # Convert product to lowercase for case-insensitive comparison
+            product_lower = product.lower()
+            
+            # Check if we have a rate for this product (case-insensitive)
+            product_rate = None
+            for key, rate in rates_dict.items():
+                if key.lower() == product_lower:
+                    product_rate = rate
+                    break
+            
+            # If no rate is found, set rate and pay to 0
+            if product_rate is None:
                 logger.warning(f"No rate found for product {product}")
-        
+                product_rate = 0
+                pay = 0
+            else:
+                # Calculate pay in agorot (as specified in the API doc)
+                pay = int(data['amount'] * product_rate)
+            
+            # Add the product to the detailed_products list
+            detailed_products.append({
+                "product": product,  # Use the original product name (not lowercase)
+                "count": data['count'],
+                "amount": data['amount'],
+                "rate": int(product_rate),
+                "pay": pay
+            })
+            
+            # Add to total pay only if a valid rate was found
+            if product_rate != 0:
+                total_pay += pay
+
+
         # Step 8: Format and Return Response
         return jsonify({
             "id": id,
