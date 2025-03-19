@@ -13,7 +13,7 @@ def get_session(id):
 
         # Query to get session data
         session_query = """
-            SELECT id, truck, direction, bruto, truckTara, neto
+            SELECT id, truck, direction, bruto, truckTara, neto, produce
             FROM transactions
             WHERE session = %s
             ORDER BY datetime
@@ -34,7 +34,8 @@ def get_session(id):
         response = {
             "id": id,
             "truck": first_record["truck"] if first_record["truck"] else "na",
-            "bruto": first_record["bruto"]
+            "bruto": first_record["bruto"],
+            "produce": first_record["produce"]
         }
 
         # Add OUT-specific fields if applicable
