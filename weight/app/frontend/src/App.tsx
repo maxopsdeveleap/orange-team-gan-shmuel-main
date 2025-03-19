@@ -5,6 +5,7 @@ import WeightRecords from './components/WeightRecords';
 import Dashboard from './components/Dashboard';
 import weightService from './api/WeightService';
 import './App.css';
+import Unknown from './components/Unknown';
 
 function App() {
   const [isHealthy, setIsHealthy] = useState(true);
@@ -54,6 +55,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/weight/new" element={<WeightForm />} />
             <Route path="/weights" element={<WeightRecords />} />
+            <Route path="/unknown" element={<Unknown />} />
             {/* Other routes will be added as components are created */}
           </Routes>
         </main>
