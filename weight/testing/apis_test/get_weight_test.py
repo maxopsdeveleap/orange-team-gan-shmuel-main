@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime, timedelta
+import sys
 
 
 def run_get_weight_check():
@@ -69,12 +70,12 @@ def run_get_weight_check():
                 try:
                     response_json = res.json()
 
-                    # בדיקה אם הפלט הוא רשימה כמו הצפוי
                     if isinstance(response_json, list):
                         if len(response_json) > len(expected):
                             print(
                                 f"❌ Test Failed: Received more items than expected. Expected {len(expected)}, but got {len(response_json)}")
                             all_tests_passed = False
+                            sys.exit(1)
                             continue
 
                         for i, expected_item in enumerate(expected):
@@ -93,26 +94,31 @@ def run_get_weight_check():
 
                             if mismatches:
                                 print(
-                                    f"❌ Test Failed: Mismatched values {mismatches} for item {i}")
+                                    f"❌ Test Failed: Mismatched values \n res:{response_item} \n exp:{response_json} for item {i}")
                                 all_tests_passed = False
+                                sys.exit(1)
 
                     else:
                         print("❌ Test Failed: Response is not a list")
                         all_tests_passed = False
+                        sys.exit(1)
 
                 except json.JSONDecodeError:
                     print(
                         f"❌ Test Failed: Response is not valid JSON -> {res.text}")
                     all_tests_passed = False
+                    sys.exit(1)
 
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}")
                 all_tests_passed = False
+                sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
+            sys.exit(1)
 
     if all_tests_passed:
         print("✅ All tests passed successfully!")
