@@ -47,8 +47,10 @@ const Unknown: React.FC = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {unknown.map(record => (
-                    <td>{record}</td>
+                {unknown.map((record, index) => (
+                    <tr>
+                        <td key={index}>{record}</td>
+                    </tr>
                 ))}
                 </tbody>
             </table>
