@@ -30,6 +30,16 @@ export interface WeightResponse {
   neto?: number | 'na';
 }
 
+
+export interface BatchWeightData {
+  file: string;
+}
+
+export interface BatchWeightResponse {
+  count: number;
+  message: string
+}
+
 export interface SessionData {
   id: string;
   truck: string;
@@ -46,9 +56,16 @@ export interface ItemData {
 
 // Weight API functions
 export const weightService = {
+
+
   // Record a new weight
   createWeight: async (data: WeightData): Promise<WeightResponse> => {
     const response = await api.post('/weight', data);
+    return response.data;
+  },
+
+  uploadBatchWeight: async (data: BatchWeightData): Promise<BatchWeightResponse> => {
+    const response = await api.post('/batch-weight', data);
     return response.data;
   },
 
@@ -68,18 +85,18 @@ export const weightService = {
   },
 
   // Upload batch weight file
-  uploadBatchWeight: async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  // uploadBatchWeight: async (file: File) => {
+  //   const formData = new FormData();
+  //   formData.append('file', file);
     
-    const response = await api.post('/batch-weight', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  //   const response = await api.post('/batch-weight', formData, {
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data',
+  //     },
+  //   });
     
-    return response.data;
-  },
+  //   return response.data;
+  // },
 
   // Get unknown containers
   getUnknownContainers: async () => {

@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import weightService from './api/WeightService';
 import './App.css';
 import Unknown from './components/Unknown';
+import BatchUpload from './components/BatchUpload';
 
 function App() {
   const [isHealthy, setIsHealthy] = useState(true);
@@ -46,6 +47,7 @@ function App() {
               <li><Link to="/weight/new">New Weight</Link></li>
               <li><Link to="/weights">Records</Link></li>
               <li><Link to="/unknown">Unknown Containers</Link></li>
+              <li><Link to="/batch-upload">Batch Upload</Link></li>
             </ul>
           </nav>
         </header>
@@ -56,6 +58,8 @@ function App() {
             <Route path="/weight/new" element={<WeightForm />} />
             <Route path="/weights" element={<WeightRecords />} />
             <Route path="/unknown" element={<Unknown />} />
+            <Route path="/batch-upload" element={<BatchUpload />} />
+            
             {/* Other routes will be added as components are created */}
           </Routes>
         </main>
