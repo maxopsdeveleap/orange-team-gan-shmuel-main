@@ -10,6 +10,7 @@ interface WeightRecord {
   neto: number | 'na';
   produce: string;
   containers: string[];
+  session: number;
 }
 
 const WeightRecords: React.FC = () => {
@@ -163,7 +164,7 @@ const WeightRecords: React.FC = () => {
                       : 'None'}
                   </td>
                   <td>
-                    <a href={`/session/${record.id}`}>View Details</a>
+                    <a href={`/session/${record.session}`}>View Details</a>
                   </td>
                 </tr>
               ))}

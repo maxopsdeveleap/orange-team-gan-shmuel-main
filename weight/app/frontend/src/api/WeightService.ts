@@ -47,6 +47,7 @@ export interface SessionData {
   bruto: number;
   truckTara?: number;
   neto?: number | 'na';
+  produce: string;
 }
 
 export interface ItemData {

@@ -7,6 +7,7 @@ import weightService from './api/WeightService';
 import './App.css';
 import Unknown from './components/Unknown';
 import BatchUpload from './components/BatchUpload';
+import Session from './components/Session';
 
 function App() {
   const [isHealthy, setIsHealthy] = useState(true);
@@ -59,6 +60,7 @@ function App() {
             <Route path="/weights" element={<WeightRecords />} />
             <Route path="/unknown" element={<Unknown />} />
             <Route path="/batch-upload" element={<BatchUpload />} />
+            <Route path="/session/:id" element={<Session />} />
             
             {/* Other routes will be added as components are created */}
           </Routes>
