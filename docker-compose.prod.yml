@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   billing_app:
     image: billing_app:latest  # Using pre-built image for production
