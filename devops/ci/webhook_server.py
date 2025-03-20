@@ -181,7 +181,8 @@ def run_ci_pipeline(branch, github_username, developer_email):
             print("🚀 Running API Tests for Billing & Weight...")
 
             test_services = {
-                "weight_app_test": "/weight/testing/main_test.py"
+                "weight_app_test": "/weight/testing/main_test.py",
+                "billing_app_test":"/billing/testing/main_test.py"
             }
 
             for service, test_script in test_services.items():
@@ -261,16 +262,11 @@ def send_email(subject, body, receiver):
         print(f"❌ Email failed: {e}")
 
 def deploy_to_production(github_username,developer_email):
-    print("Here will be depolyed the main productaion")
-    send_email(
+    compose_file = "docker-compose.prod.yml" 
 
-    subject=f"✅ depolyed main by {github_username}",
-
-    body="Main is deployed successfully.",
-
-    receiver=developer_email
-
-        )
+    subprocess.run(["docker-compose", "-f", compose_file, "down"], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["docker-compose", "-f", compose_file, "build"], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["docker-compose", "-f", compose_file, "up", "-d"], cwd=LOCAL_REPO_PATH, check=True)
 
 
 if __name__ == '__main__':
