@@ -132,9 +132,8 @@ def update_truck(id):
 @app.route('/rates', methods=['GET'])
 def get_rates():
     try:
-        RATES_DIRECTORY = "/in"
         # Define the path to the rates file
-        rates_file_path = os.path.join(RATES_DIRECTORY, "rates.xlsx")
+        rates_file_path = os.path.join(app.config["RATES_FOLDER_PATH"], "rates.xlsx")
 
         # Check if the file exists
         if not os.path.exists(rates_file_path):
