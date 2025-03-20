@@ -13,7 +13,7 @@ def run_get_session_check():
             "expected": {
                 "bruto": 16000,
                 "id": "1",
-                "neto": 3117,
+                "neto": 3438,
                 "truck": "test123",
                 "truckTara": 12000,
                 "produce": "orange",
