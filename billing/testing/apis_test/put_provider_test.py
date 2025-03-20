@@ -99,20 +99,24 @@ def run_put_provider_check():
                         print(
                             f"❌ Test Failed: Mismatched values {mismatches} in response {response_json}")
                         all_tests_passed = False
+                        sys.exit(1)
 
                 except json.JSONDecodeError:
                     print(
                         f"❌ Test Failed: Response is not valid JSON -> {res.text}")
                     all_tests_passed = False
+                    sys.exit(1)
 
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}")
                 all_tests_passed = False
+                sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
+            sys.exit(1)
 
     if all_tests_passed:
         print("✅ All tests passed successfully!")

@@ -1,8 +1,9 @@
 import requests
+import os
 from datetime import datetime, timedelta
 
 def run_get_truck_check():
-    BASE_URL = "http://127.0.0.1:5000"
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "truck"
 
     # Create a provider for testing
@@ -79,10 +80,12 @@ def run_get_truck_check():
                 print(
                     f"❌ Test Test for {truck_id} with params {params} Failed: Expected status {expected_status}, but got {res.status_code}")
                 all_tests_passed = False
+                sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
+            sys.exit(1)
 
     if all_tests_passed:
         print("✅ All tests passed successfully!")
