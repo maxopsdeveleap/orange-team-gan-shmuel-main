@@ -43,7 +43,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
     volumes:
-      - ./weight/in:/app/in
+      - ./weight/in:/weight/app/in
     depends_on:
       - weight_db
     restart: always
