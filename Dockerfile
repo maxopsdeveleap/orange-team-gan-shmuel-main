@@ -1,33 +1,15 @@
+# Use a lightweight Python base image
 FROM python:3.10
 
+# Set the working directory
 WORKDIR /app
 
-# Install system dependencies including Docker CLI
-
-RUN apt-get update && apt-get install -y \
-
-    curl \
-
-    docker.io 
-
-# Ensure Docker CLI is installed
-
-RUN docker --version
-
 # Copy and install Python dependencies
-
 COPY requirements.txt ./
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-
+# Copy the rest of the app
 COPY . .
 
-# Ensure correct permissions for Docker socket access
-
-RUN usermod -aG docker root
-
-# Run Webhook Server
-
+# Ensure the Flask server runs continuously
 CMD ["python", "devops/ci/webhook_server.py"]
