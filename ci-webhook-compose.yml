@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ci-webhook:
+    build: .
+    container_name: ci-webhook
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Provides Docker access
+    restart: always
