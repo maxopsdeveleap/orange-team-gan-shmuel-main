@@ -1,5 +1,6 @@
 import requests
 import os
+import sys
 
 def run_health_check():
 
@@ -16,5 +17,7 @@ def run_health_check():
         else:
             print(
                 f"❌ Health Check Failed: Expected '{expected_text}, {expected_status}', but got '{res.text.strip()}, {res.status_code}'")
+            sys.exit(1)
     except requests.exceptions.RequestException as e:
         print(f"🚨 Test failed with exception: {e}")
+        sys.exit(1)

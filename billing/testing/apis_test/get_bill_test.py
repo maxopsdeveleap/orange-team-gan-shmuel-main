@@ -1,5 +1,6 @@
 import requests
 import os
+import sys
 
 
 def run_get_bill_check():
@@ -16,6 +17,8 @@ def run_get_bill_check():
         else:
             get_bill = ("❌ Bill GET Test FAILED!")
             print(get_bill, response.status_code)
+            sys.exit(1)
     except requests.RequestException as e:
         get_bill = ("❌ Bill GET Test FAILED!")
         print(get_bill, e)
+        sys.exit(1)

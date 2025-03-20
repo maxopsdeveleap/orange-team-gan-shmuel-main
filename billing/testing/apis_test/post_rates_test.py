@@ -52,3 +52,4 @@ def run_post_rates_check():
         print("✅ POST Rates Check Passed")
     else:
         print(f"❌ POST Rates Check Failed: Status Code {response.status_code}, {dbcount[0]} rows in Rates table")
+        sys.exit(1)
