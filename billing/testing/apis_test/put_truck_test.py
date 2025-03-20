@@ -1,6 +1,7 @@
 import requests
 import os
 import json
+import sys
 
 def run_put_truck_check():
     BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
@@ -18,7 +19,7 @@ def run_put_truck_check():
     
     if provider1_res.status_code != 201 or provider2_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test providers")
-        return
+        sys.exit(1)
     
     provider1_id = provider1_res.json()["id"]
     provider2_id = provider2_res.json()["id"]
@@ -31,7 +32,7 @@ def run_put_truck_check():
     
     if truck_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test truck")
-        return
+        sys.exit(1)
 
     checks = [
         {
@@ -98,7 +99,7 @@ def run_put_truck_check():
                         print(
                             f"❌ Test Failed: Missing keys {missing_keys} in response {response_json}")
                         all_tests_passed = False
-                        continue
+                        sys.exit(1)
 
                     mismatches = {
                         key: (response_json[key], expected[key])

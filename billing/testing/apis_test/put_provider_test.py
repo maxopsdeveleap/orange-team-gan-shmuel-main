@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import sys
 
 def run_put_provider_check():
     BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
@@ -14,7 +15,7 @@ def run_put_provider_check():
     
     if setup_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test provider / provider exists")
-        return
+        sys.exit(1)
     
     provider_id = setup_res.json()["id"]
 
