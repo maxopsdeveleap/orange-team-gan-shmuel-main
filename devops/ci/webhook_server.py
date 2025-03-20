@@ -181,7 +181,7 @@ def run_ci_pipeline(branch, github_username, developer_email):
             print("🚀 Running API Tests for Billing & Weight...")
 
             test_services = {
-                "weight_app": "weight/testing/main_test.py"
+                "weight_app_test": "/weight/testing/main_test.py"
             }
 
             for service, test_script in test_services.items():
