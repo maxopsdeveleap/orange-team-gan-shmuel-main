@@ -19,6 +19,11 @@ def run_get_session_check():
                 "produce": "orange",
             },
             "status": 200
+        },
+        {
+            "id": "aaa",
+            "expected": {},
+            "status": 404
         }
     ]
 
@@ -72,10 +77,10 @@ def run_get_session_check():
                 all_tests_passed = False
                 sys.exit(1)
 
+            if all_tests_passed:
+                print("✅ All tests passed successfully!")
+
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
-
-    if all_tests_passed:
-        print("✅ All tests passed successfully!")

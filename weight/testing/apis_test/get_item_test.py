@@ -26,26 +26,22 @@ def run_get_item_check():
             },
             "status": 200
         },
-        # {
-        #     "id": "test123",
-        #     "payload": {
-        #         "from": 19990309084418,
-        #         "to": 19990309084418
-        #     },
-        #     "expected": {
-        #         "id": "test123",
-        #         "sessions": [1],
-        #         "tara": 12000
-        #     },
-        #     "status": 200
-        # },
+        {
+            "id": "test123",
+            "payload": {
+                "from": 19990309084418,
+                "to": 19990309084418
+            },
+            "expected": {},
+            "status": 404
+        },
         {
             "id": "test78",
             "payload": {
                 "from": 19990309084418,
                 "to": 19990309084418
             },
-            # "expected":
+            "expected": {},
             "status": 404
         },
     ]
