@@ -2,7 +2,7 @@ from flask import request, jsonify
 from datetime import datetime
 import mysqlweight
 import json
-
+from utility import convert_to_kg 
 
 def handle_weight_in(cursor, connection, data, direction, truck, containers):
     # Check for existing recent transaction for this truck/direction
@@ -30,8 +30,8 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers):
 
     # Prepare transaction data
     now = datetime.now()
-    weight = data['weight']
-    unit = data['unit']
+    weight = convert_to_kg(data['weight'], data['unit'])
+    unit = 'kg'
     produce = data.get('produce', 'na')
 
     # set up the last session id to maintaine continues
@@ -70,16 +70,17 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers):
             return jsonify({"error": "No containers specified for 'none' direction"}), 400
 
         containers_list = containers.split(',')
-        for container in containers_list:
-            container_query = """
-                INSERT INTO containers_registered
-                (container_id, weight, unit)
-                VALUES (%s, %s, %s)
-                ON DUPLICATE KEY UPDATE weight = %s, unit = %s
-            """
-            cursor.execute(container_query, (container,
-                           weight, unit, weight, unit))
-        transaction_id = None  # No truck transaction
+        if len(containers_list) > 1:
+            return jsonify({"error": "Trying to weight more than 1 container"}), 400
+        container_query = """
+            INSERT INTO containers_registered
+            (container_id, weight, unit)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE weight = %s, unit = %s
+        """
+        cursor.execute(container_query, (containers,
+                        weight, unit, weight, unit))
+        transaction_id = containers # name
 
     connection.commit()
 
@@ -120,18 +121,19 @@ def handle_weight_out(cursor, connection, data, truck):
     if containers:
         for container in containers:
             # Fetch container weight from registered containers
-            container_query = "SELECT weight FROM containers_registered WHERE container_id = %s"
+            container_query = "SELECT weight, unit FROM containers_registered WHERE container_id = %s"
             cursor.execute(container_query, (container,))
             container_record = cursor.fetchone()
 
             if not container_record:
                 total_container_tara = None
                 break
-            total_container_tara += container_record['weight']
+            weight = convert_to_kg(container_record['weight'], container_record['unit'])
+            total_container_tara += weight
 
     # Prepare out transaction
     now = datetime.now()
-    out_weight = data['weight']
+    out_weight = convert_to_kg(data['weight'], data['unit'])
 
     # Calculate neto
     if truck != 'na':

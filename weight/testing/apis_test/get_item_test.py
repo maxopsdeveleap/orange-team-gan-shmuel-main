@@ -25,7 +25,25 @@ def run_get_item_check():
                 "tara": 12000
             },
             "status": 200
-        }
+        },
+        {
+            "id": "test123",
+            "payload": {
+                "from": 19990309084418,
+                "to": 19990309084418
+            },
+            "expected": {},
+            "status": 404
+        },
+        {
+            "id": "test78",
+            "payload": {
+                "from": 19990309084418,
+                "to": 19990309084418
+            },
+            "expected": {},
+            "status": 404
+        },
     ]
 
     all_tests_passed = True
@@ -80,10 +98,10 @@ def run_get_item_check():
                 all_tests_passed = False
                 sys.exit(1)
 
+            if all_tests_passed:
+                print("✅ All tests passed successfully!")
+
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
-
-    if all_tests_passed:
-        print("✅ All tests passed successfully!")
