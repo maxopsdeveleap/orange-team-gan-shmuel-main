@@ -21,7 +21,7 @@ def run_get_truck_check():
     # Create a truck for testing
     truck_res = requests.post(
         f"{BASE_URL}/truck",
-        json={"id": "TRUCK1", "provider_id": provider_id}
+        json={"id": "T-14409", "provider_id": provider_id}
     )
     
     if truck_res.status_code != 201:
@@ -34,7 +34,7 @@ def run_get_truck_check():
 
     checks = [
         {
-            "id": "TRUCK1",
+            "id": "T-14409",
             "params": {
                 "from": from_time,
                 "to": to_time
@@ -50,7 +50,7 @@ def run_get_truck_check():
             "expected_status": 404
         },
         {
-            "id": "TRUCK1",
+            "id": "T-14409",
             "params": {
                 "from": "invalid_format",
                 "to": to_time
@@ -78,7 +78,7 @@ def run_get_truck_check():
                 print(f"✅ Test for {truck_id} with params {params} passed")
             else:
                 print(
-                    f"❌ Test Test for {truck_id} with params {params} Failed: Expected status {expected_status}, but got {res.status_code}")
+                    f"❌ Test for {truck_id} with params {params} Failed: Expected status {expected_status}, but got {res.status_code}")
                 all_tests_passed = False
                 sys.exit(1)
 
