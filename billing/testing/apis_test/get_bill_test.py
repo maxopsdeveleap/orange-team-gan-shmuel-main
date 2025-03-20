@@ -1,28 +1,21 @@
 import requests
+import os
 
-class Colors:
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    END = '\033[0m'
-
-class Formats:
-    BOLD = '\033[1m'
-    RESET = '\033[0m'
 
 def run_get_bill_check():
-    bill_get_url = "http://localhost:5000/bill/{id}"
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
+    path = "bill"
+    id = 10006
+
+    bill_get_url = f"{BASE_URL}/{path}/{id}"
     try:
-        bill_get_url = bill_get_url.format(id="10006")
         response = requests.get(bill_get_url)
         if response.status_code == 200:
-            get_bill = ("Bill GET Test :" + Formats.BOLD + Colors.GREEN + " Passed OK!" + Colors.END + Formats.RESET)
+            get_bill = ("✅ Bill GET Test Passed")
             print(get_bill)
         else:
-            get_bill = ("Bill GET Test :" + Formats.BOLD + Colors.RED + " FAILED!" + Colors.END + Formats.RESET)
-            print(get_bill)
-            print(response)
+            get_bill = ("❌ Bill GET Test FAILED!")
+            print(get_bill, response.status_code)
     except requests.RequestException as e:
-        get_bill = ("Bill GET Test :" + Formats.BOLD + Colors.RED + " FAILED!" + Colors.END + Formats.RESET)
-        print(get_bill)
+        get_bill = ("❌ Bill GET Test FAILED!")
         print(get_bill, e)
-    print(get_bill)

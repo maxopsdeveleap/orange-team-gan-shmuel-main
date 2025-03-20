@@ -1,8 +1,9 @@
 import requests
+import os
 import json
 
 def run_post_truck_check():
-    BASE_URL = "http://127.0.0.1:5000"
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "truck"
     
     # Create a provider for testing

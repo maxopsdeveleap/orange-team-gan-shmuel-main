@@ -4,7 +4,7 @@ import io
 import pandas as pd
 
 def run_get_rates_check():
-    BASE_URL = "http://127.0.0.1:5000"
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "rates"
 
     all_tests_passed = True

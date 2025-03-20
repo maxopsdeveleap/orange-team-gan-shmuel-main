@@ -1,7 +1,9 @@
-def run_health_check():
-    import requests
+import requests
+import os
 
-    BASE_URL = "http://127.0.0.1:5000"
+def run_health_check():
+
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "health"
 
     try:
