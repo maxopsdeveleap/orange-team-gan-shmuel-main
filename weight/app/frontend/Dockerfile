@@ -2,16 +2,16 @@
 FROM node:18-alpine AS build
 
 # Set working directory
-WORKDIR /app
+WORKDIR /weight/app
 
 # Copy package.json and package-lock.json
-COPY app/frontend/package.json app/frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy the rest of the app
-COPY app/frontend/. .
+COPY . .
 
 # Build the app
 RUN npm run build
@@ -29,7 +29,7 @@ COPY nginx.conf /etc/nginx/conf.d/
 WORKDIR /usr/share/nginx/html
 
 # Copy built React app from the previous stage
-COPY --from=build /app/dist .
+COPY --from=build /weight/app/dist .
 
 # Expose port 80
 EXPOSE 80
