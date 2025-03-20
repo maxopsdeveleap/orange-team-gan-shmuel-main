@@ -6,18 +6,15 @@ import json
 
 
 def get_weight(paramFrom, paramTo):
-    # Get the current date and time
-    # now = datetime.now()
-
-    # # Get parameters from the URL
-    # paramFrom = request.args.get("from", now.strftime("%Y%m%d000000"))
-    # paramTo = request.args.get("to", now.strftime("%Y%m%d%H%M%S"))
-
+    
     # Convert paramFrom and paramTo to MySQL DATETIME format
-    paramFromFormatted = datetime.strptime(
-        paramFrom, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
-    paramToFormatted = datetime.strptime(
-        paramTo, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        paramFromFormatted = datetime.strptime(
+            paramFrom, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+        paramToFormatted = datetime.strptime(
+            paramTo, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Expected format: yyyymmddhhmmss"}), 400
 
     paramFilter = request.args.get("filter", "in,out,none")
 
@@ -29,7 +26,7 @@ def get_weight(paramFrom, paramTo):
         cursor = connection.cursor(dictionary=True)
 
         query = """
-                SELECT id, direction, bruto, neto, produce, containers
+                SELECT id, direction, bruto, neto, produce, containers, session
                 FROM transactions
                 WHERE direction IN ({})
                 AND datetime BETWEEN %s AND %s
