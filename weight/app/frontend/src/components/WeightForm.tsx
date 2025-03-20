@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import weightService from '../api/WeightService';
 import { AxiosError } from 'axios';
+import { useLocation } from "react-router-dom";
 
 interface WeightFormProps {
   onSuccess?: (data: any) => void;
 }
 
+interface LocationState {
+  direction?: 'in' | 'out' | 'none';
+  containers?: string;
+}
+
 const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
-  const [direction, setDirection] = useState<'in' | 'out' | 'none'>('in');
+
+  const location = useLocation();
+  const state = location.state as LocationState || {}; 
+
+
+  const [direction, setDirection] = useState<'in' | 'out' | 'none'>(state.direction || 'in');
   const [truck, setTruck] = useState('');
-  const [containers, setContainers] = useState('');
+  const [containers, setContainers] = useState(state.containers || '');
   const [weight, setWeight] = useState('');
   const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
   const [force, setForce] = useState(false);

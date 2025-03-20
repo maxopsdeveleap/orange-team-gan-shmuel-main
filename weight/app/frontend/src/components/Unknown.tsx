@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import weightService from '../api/WeightService';
+import { useNavigate } from 'react-router-dom';
 
 
   
 const Unknown: React.FC = () => {
+
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
     const [unknown, setUnknown] = useState([]);
@@ -32,6 +35,15 @@ const Unknown: React.FC = () => {
 
     }, []);
 
+    const handleNavigate = (container: string) => {
+        navigate('/weight/new', { 
+            state: {
+                direction: 'none', 
+                containers: container
+            } 
+        });
+    };
+
 
     return (
         <>
@@ -43,12 +55,16 @@ const Unknown: React.FC = () => {
                 <thead>
                 <tr>
                     <th>Unknown container</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                {unknown.map((record, index) => (
+                {unknown.map((container, index) => (
                     <tr>
-                        <td key={index}>{record}</td>
+                        <td key={index}>{container}</td>
+                        <td>
+                            <button  onClick={()=>{ handleNavigate(container) }}>Add container</button>
+                        </td>
                     </tr>
                 ))}
                 </tbody>
