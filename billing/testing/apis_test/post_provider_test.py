@@ -2,6 +2,7 @@ import requests
 import json
 import mysql.connector
 import os
+import sys
 
 def connect():
   connection = None

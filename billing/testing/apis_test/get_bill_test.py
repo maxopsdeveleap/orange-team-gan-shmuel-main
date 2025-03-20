@@ -6,7 +6,7 @@ import sys
 def run_get_bill_check():
     BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "bill"
-    id = 10006
+    id = 6
 
     bill_get_url = f"{BASE_URL}/{path}/{id}"
     try:

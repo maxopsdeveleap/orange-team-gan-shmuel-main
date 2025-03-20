@@ -1,6 +1,7 @@
 import requests
 import os
 import json
+import sys
 
 def run_post_truck_check():
     BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
@@ -14,7 +15,7 @@ def run_post_truck_check():
     
     if provider_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test provider")
-        return
+        sys.exit(1)
     
     provider_id = provider_res.json()["id"]
 
