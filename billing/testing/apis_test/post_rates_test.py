@@ -1,6 +1,7 @@
 import requests
 import mysql.connector
 import os
+import sys
 
 def connect():
   connection = None
@@ -27,6 +28,7 @@ def run_post_rates_check():
 
   if not os.path.exists(rates_file_path):
       print(f"❌ File not found: {rates_file_path}")
+      sys.exit(1)
 
   BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
   path = "rates"

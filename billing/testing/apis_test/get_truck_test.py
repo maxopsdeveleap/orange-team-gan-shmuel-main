@@ -1,5 +1,6 @@
 import requests
 import os
+import sys
 from datetime import datetime, timedelta
 
 def run_get_truck_check():
@@ -14,7 +15,7 @@ def run_get_truck_check():
     
     if provider_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test provider")
-        return
+        sys.exit(1)
     
     provider_id = provider_res.json()["id"]
     
@@ -26,10 +27,10 @@ def run_get_truck_check():
     
     if truck_res.status_code != 201:
         print(f"❌ Test setup failed: Could not create test truck")
-        return
+        sys.exit(1)
 
     current_time = datetime.now()
-    from_time = (current_time - timedelta(hours=24)).strftime("%Y%m%d%H%M%S")
+    from_time = (current_time - timedelta(hours=72)).strftime("%Y%m%d%H%M%S")
     to_time = current_time.strftime("%Y%m%d%H%M%S")
 
     checks = [
