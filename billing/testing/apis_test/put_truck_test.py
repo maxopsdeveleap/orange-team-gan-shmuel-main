@@ -1,49 +1,77 @@
 import requests
+import os
 import json
-import sys
-from datetime import datetime, timedelta
 
-
-def run_get_item_check():
-    BASE_URL = "http://127.0.0.1:5000"
-    path = "item"
-
-    current_time = datetime.now()
-    from_time = (current_time - timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
-    to_time = (current_time + timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
+def run_put_truck_check():
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
+    
+    # Create two providers for testing
+    provider1_res = requests.post(
+        f"{BASE_URL}/provider",
+        json={"name": "Provider1ForTruck"}
+    )
+    
+    provider2_res = requests.post(
+        f"{BASE_URL}/provider",
+        json={"name": "Provider2ForTruck"}
+    )
+    
+    if provider1_res.status_code != 201 or provider2_res.status_code != 201:
+        print(f"❌ Test setup failed: Could not create test providers")
+        return
+    
+    provider1_id = provider1_res.json()["id"]
+    provider2_id = provider2_res.json()["id"]
+    
+    # Create a truck for testing
+    truck_res = requests.post(
+        f"{BASE_URL}/truck",
+        json={"id": "TEST123", "provider_id": provider1_id}
+    )
+    
+    if truck_res.status_code != 201:
+        print(f"❌ Test setup failed: Could not create test truck")
+        return
 
     checks = [
         {
-            "id": "test123",
+            "id": "TEST123",
             "payload": {
-                "from": from_time,
-                "to": to_time
+                "provider_id": provider2_id
             },
             "expected": {
-                "id": "test123",
-                "sessions": [1],
-                "tara": 12000
+                "message": "Truck updated successfully"
             },
             "status": 200
         },
         {
-            "id": "test123",
+            "id": "NONEXISTENT",
             "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
+                "provider_id": provider1_id
             },
-            "expected": {},
+            "expected": {
+                "error": str
+            },
             "status": 404
         },
         {
-            "id": "test78",
+            "id": "TEST123",
             "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
+                "provider_id": "999999"  # Non-existent provider
             },
-            "expected": {},
-            "status": 404
+            "expected": {
+                "error": str
+            },
+            "status": 400
         },
+        {
+            "id": "TEST123",
+            "payload": {},
+            "expected": {
+                "error": str
+            },
+            "status": 400
+        }
     ]
 
     all_tests_passed = True
@@ -52,10 +80,13 @@ def run_get_item_check():
         payload = check["payload"]
         expected = check["expected"]
         expected_status = check["status"]
+        truck_id = check["id"]
 
         try:
-            res = requests.get(
-                f"{BASE_URL}/{path}/{check['id']}?from={payload['from']}&to={payload['to']}")
+            res = requests.put(
+                f"{BASE_URL}/truck/{truck_id}",
+                json=payload
+            )
 
             if res.status_code == expected_status:
                 try:
@@ -67,7 +98,6 @@ def run_get_item_check():
                         print(
                             f"❌ Test Failed: Missing keys {missing_keys} in response {response_json}")
                         all_tests_passed = False
-                        sys.exit(1)
                         continue
 
                     mismatches = {
@@ -98,10 +128,10 @@ def run_get_item_check():
                 all_tests_passed = False
                 sys.exit(1)
 
-            if all_tests_passed:
-                print("✅ All tests passed successfully!")
-
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
+
+    if all_tests_passed:
+        print("✅ All tests passed successfully!")

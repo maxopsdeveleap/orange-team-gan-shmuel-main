@@ -6,10 +6,10 @@ services:
       - "5000:5000"
     environment:
       MYSQL_HOST: billing_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_USER: your_mysql_user
+      MYSQL_PASSWORD: your_mysql_password
     volumes:
-      - ./billing/in:/in
+      - ./billing/in:/billing/in
     depends_on:
       - billing_db
     restart: on-failure
@@ -40,8 +40,8 @@ services:
       - "5001:5000"
     environment:
       MYSQL_HOST: weight_db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
+      MYSQL_USER: your_mysql_user
+      MYSQL_PASSWORD: your_mysql_password
     volumes:
       - ./weight/in:/app/in
     depends_on:

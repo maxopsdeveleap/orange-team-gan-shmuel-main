@@ -1,5 +1,6 @@
 import requests
 import json
+import sys
 
 
 def run_batch_weight_check():
@@ -47,14 +48,18 @@ def run_batch_weight_check():
                     else:
                         print(
                             f"❌ Test Failed: Mismatched values {mismatches} in response {response_json}")
+                        sys.exit(1)
 
                 except json.JSONDecodeError:
                     print(
                         f"❌ Test Failed: Response is not valid JSON -> {res.text}")
+                    sys.exit(1)
 
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected['status']}, but got {res.status_code}")
+                sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
+            sys.exit(1)

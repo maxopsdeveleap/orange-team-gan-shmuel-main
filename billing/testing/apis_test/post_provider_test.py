@@ -1,49 +1,56 @@
 import requests
 import json
-import sys
-from datetime import datetime, timedelta
+import mysql.connector
+import os
+
+def connect():
+  connection = None
+  try:
+    connection = mysql.connector.connect(
+      host=os.environ.get('MYSQL_HOST', 'localhost'),
+      port=3306,
+      user=os.environ.get('MYSQL_USER', 'root'),
+      password=os.environ.get('MYSQL_PASSWORD', 'rootpassword'),
+      database="billdb"
+    )
+  except mysql.connector.Error as err:
+    print(f"Error: '{err}'")
+    raise
+
+  return connection
 
 
-def run_get_item_check():
-    BASE_URL = "http://127.0.0.1:5000"
-    path = "item"
 
-    current_time = datetime.now()
-    from_time = (current_time - timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
-    to_time = (current_time + timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
+
+def run_post_provider_check():
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
+    path = "provider"
+    
+    provider_name = "ProviderTest2"
+    connection = connect()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM Provider WHERE name = %s", (provider_name,))
+    existing_provider = cursor.fetchone()
+    connection.commit()
+
 
     checks = [
         {
-            "id": "test123",
             "payload": {
-                "from": from_time,
-                "to": to_time
+                "name": f"{provider_name}"
             },
             "expected": {
-                "id": "test123",
-                "sessions": [1],
-                "tara": 12000
+                "id": str
             },
-            "status": 200
+            "status": 201
         },
         {
-            "id": "test123",
-            "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
+            "payload": {},
+            "expected": {
+                "error": str
             },
-            "expected": {},
-            "status": 404
-        },
-        {
-            "id": "test78",
-            "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
-            },
-            "expected": {},
-            "status": 404
-        },
+            "status": 400
+        }
     ]
 
     all_tests_passed = True
@@ -54,8 +61,10 @@ def run_get_item_check():
         expected_status = check["status"]
 
         try:
-            res = requests.get(
-                f"{BASE_URL}/{path}/{check['id']}?from={payload['from']}&to={payload['to']}")
+            res = requests.post(
+                f"{BASE_URL}/{path}",
+                json=payload
+            )
 
             if res.status_code == expected_status:
                 try:
@@ -67,7 +76,6 @@ def run_get_item_check():
                         print(
                             f"❌ Test Failed: Missing keys {missing_keys} in response {response_json}")
                         all_tests_passed = False
-                        sys.exit(1)
                         continue
 
                     mismatches = {
@@ -93,15 +101,19 @@ def run_get_item_check():
                     sys.exit(1)
 
             else:
-                print(
-                    f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}")
-                all_tests_passed = False
-                sys.exit(1)
-
-            if all_tests_passed:
-                print("✅ All tests passed successfully!")
+                if res.status_code == 409 and existing_provider:
+                    print(f"Provider: {existing_provider[1]} exists under ID: {existing_provider[0]} Status code: {res.status_code}")
+                    all_tests_passed = False
+                else:
+                    print(
+                        f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}")
+                    all_tests_passed = False
+                    sys.exit(1)
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
+
+    if all_tests_passed:
+        print("✅ All tests passed successfully!")

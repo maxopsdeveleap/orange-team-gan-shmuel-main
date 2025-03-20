@@ -17,11 +17,11 @@ def get_item(id, paramFrom, paramTo):
 
     query = """
         SELECT * FROM transactions 
-        WHERE truck = %s 
-        OR JSON_CONTAINS(containers, JSON_QUOTE(%s))
+        WHERE (truck = %s OR JSON_CONTAINS(containers, JSON_QUOTE(%s)))
+        AND datetime BETWEEN %s AND %s
     """
 
-    cursor.execute(query, (id, id))
+    cursor.execute(query, (id, id, paramFromFormatted, paramToFormatted))
     transactions = cursor.fetchall()
 
     cursor.close()

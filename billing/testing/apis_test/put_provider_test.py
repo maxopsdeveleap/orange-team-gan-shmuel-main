@@ -1,49 +1,62 @@
 import requests
 import json
-import sys
-from datetime import datetime, timedelta
+import os
 
+def run_put_provider_check():
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
+    path = "provider"
 
-def run_get_item_check():
-    BASE_URL = "http://127.0.0.1:5000"
-    path = "item"
-
-    current_time = datetime.now()
-    from_time = (current_time - timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
-    to_time = (current_time + timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
+    # Create a provider first to get a valid ID
+    setup_res = requests.post(
+        f"{BASE_URL}/{path}",
+        json={"name": "ProviderToUpdate"}
+    )
+    
+    if setup_res.status_code != 201:
+        print(f"❌ Test setup failed: Could not create test provider / provider exists")
+        return
+    
+    provider_id = setup_res.json()["id"]
 
     checks = [
         {
-            "id": "test123",
+            "id": provider_id,
             "payload": {
-                "from": from_time,
-                "to": to_time
+                "name": "UpdatedProvider"
             },
             "expected": {
-                "id": "test123",
-                "sessions": [1],
-                "tara": 12000
+                "message": "Provider updated successfully"
             },
             "status": 200
         },
         {
-            "id": "test123",
+            "id": "999999",  # Non-existent ID
             "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
+                "name": "UpdatedProvider"
             },
-            "expected": {},
+            "expected": {
+                "error": str
+            },
             "status": 404
         },
         {
-            "id": "test78",
-            "payload": {
-                "from": 19990309084418,
-                "to": 19990309084418
+            "id": provider_id,
+            "payload": {},
+            "expected": {
+                "error": str
             },
-            "expected": {},
-            "status": 404
+            "status": 400
         },
+        {
+            "id": "invalid",  # Invalid ID format
+            "payload": {
+                "name": "UpdatedProvider"
+            },
+            "expected": {
+                "error": str
+            },
+            "status": 400
+        }
     ]
 
     all_tests_passed = True
@@ -52,10 +65,13 @@ def run_get_item_check():
         payload = check["payload"]
         expected = check["expected"]
         expected_status = check["status"]
+        provider_id = check["id"]
 
         try:
-            res = requests.get(
-                f"{BASE_URL}/{path}/{check['id']}?from={payload['from']}&to={payload['to']}")
+            res = requests.put(
+                f"{BASE_URL}/{path}/{provider_id}",
+                json=payload
+            )
 
             if res.status_code == expected_status:
                 try:
@@ -67,7 +83,6 @@ def run_get_item_check():
                         print(
                             f"❌ Test Failed: Missing keys {missing_keys} in response {response_json}")
                         all_tests_passed = False
-                        sys.exit(1)
                         continue
 
                     mismatches = {
@@ -98,10 +113,10 @@ def run_get_item_check():
                 all_tests_passed = False
                 sys.exit(1)
 
-            if all_tests_passed:
-                print("✅ All tests passed successfully!")
-
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
+
+    if all_tests_passed:
+        print("✅ All tests passed successfully!")
