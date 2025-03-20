@@ -160,7 +160,7 @@ def pull_latest_code(branch):
 
 
 def run_ci_pipeline(branch,github_username,developer_email):
-
+    # TEST ENV
     print(f"🔧 Running CI pipeline for branch: {branch}")
 
     subprocess.run(["docker-compose", "-f", "docker-compose.test.yml", "build"], cwd=LOCAL_REPO_PATH, check=True)
