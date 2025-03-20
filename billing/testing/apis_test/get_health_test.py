@@ -1,7 +1,10 @@
-def run_health_check():
-    import requests
+import requests
+import os
+import sys
 
-    BASE_URL = "http://127.0.0.1:5000"
+def run_health_check():
+
+    BASE_URL = os.getenv("TESTING_BASE_URL", "http://localhost:5000")
     path = "health"
 
     try:
@@ -14,5 +17,7 @@ def run_health_check():
         else:
             print(
                 f"❌ Health Check Failed: Expected '{expected_text}, {expected_status}', but got '{res.text.strip()}, {res.status_code}'")
+            sys.exit(1)
     except requests.exceptions.RequestException as e:
         print(f"🚨 Test failed with exception: {e}")
+        sys.exit(1)
