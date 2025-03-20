@@ -159,42 +159,65 @@ def pull_latest_code(branch):
 
 
 
-def run_ci_pipeline(branch,github_username,developer_email):
+def run_ci_pipeline(branch, github_username, developer_email):
+    """
+    Runs CI pipeline for the given branch.
+    If it's a test branch, it uses `docker-compose.test.yml`.
+    If it's the main branch, it uses `docker-compose.product.yml`.
+    """
 
     print(f"🔧 Running CI pipeline for branch: {branch}")
 
+    compose_file = "docker-compose.test.yml" 
 
+    try:
+        print(f"🚀 Using compose file: {compose_file}")
+        subprocess.run(["docker-compose", "-f", compose_file, "build"], cwd=LOCAL_REPO_PATH, check=True)
+        subprocess.run(["docker-compose", "-f", compose_file, "up", "-d"], cwd=LOCAL_REPO_PATH, check=True)
 
-    for service in SERVICES:
+        print("✅ Services started successfully.")
 
-        service_path = os.path.join(LOCAL_REPO_PATH, service)
+        if compose_file == "docker-compose.test.yml":
+            print("🚀 Running API Tests for Billing & Weight...")
 
-        print(f"➡️ Handling service: {service}")
+            test_services = {
+                "weight_app_test":"/weight/testing/main_test.py",
+            }
 
+            for service, test_script in test_services.items():
+                print(f"🔍 Running tests in {service}...")
 
+                test_command = [
+                    "docker", "exec", "-i", service, "python3", test_script
+                ]
 
-        subprocess.run(["docker-compose", "build"], cwd=service_path, check=True)
+                try:
+                    subprocess.run(test_command, check=True)
+                    print(f"✅ Tests passed in {service}!")
 
-        subprocess.run(["docker-compose", "up", "-d"], cwd=service_path, check=True)
+                except subprocess.CalledProcessError as e:
+                    print(f"❌ Tests failed in {service}: {str(e)}")
 
+                    send_email(
+                        subject=f"❌ CI Test Failure for {branch} by {github_username}",
+                        body=f"Tests failed in {service} during CI pipeline.\n\nError:\n{str(e)}",
+                        receiver=developer_email
+                    )
 
+                    subprocess.run(["docker-compose", "-f", compose_file, "down"], cwd=LOCAL_REPO_PATH, check=True)
+                    return  # Stop further execution if tests fail
 
-    print("✅ Running E2E tests (placeholder)...")
+        subprocess.run(["docker-compose", "-f", compose_file, "down"], cwd=LOCAL_REPO_PATH, check=True)
+        print("✅ CI pipeline completed successfully.")
 
-    # TODO: Implement real tests
+    except subprocess.CalledProcessError as e:
+        print(f"❌ CI pipeline failed: {str(e)}")
 
-
-
-    for service in SERVICES:
-
-        service_path = os.path.join(LOCAL_REPO_PATH, service)
-
-        print(f"⛔️ Stopping service: {service}")
-
-        subprocess.run(["docker-compose", "down"], cwd=service_path, check=True)
-
-
-    print("✅ CI pipeline completed successfully.")
+        send_email(
+            subject=f"❌ CI Failure for {branch} by {github_username}",
+            body=f"CI pipeline failed for your merged PR.\n\nError:\n{str(e)}",
+            receiver=developer_email
+        )
 
 
 
@@ -238,16 +261,11 @@ def send_email(subject, body, receiver):
         print(f"❌ Email failed: {e}")
 
 def deploy_to_production(github_username,developer_email):
-    print("Here will be depolyed the main productaion")
-    send_email(
+    compose_file = "docker-compose.prod.yml" 
 
-    subject=f"✅ depolyed main by {github_username}",
-
-    body="Main is deployed successfully.",
-
-    receiver=developer_email
-
-        )
+    subprocess.run(["docker-compose", "-f", compose_file, "down"], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["docker-compose", "-f", compose_file, "build"], cwd=LOCAL_REPO_PATH, check=True)
+    subprocess.run(["docker-compose", "-f", compose_file, "up", "-d"], cwd=LOCAL_REPO_PATH, check=True)
 
 
 if __name__ == '__main__':
