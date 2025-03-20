@@ -33,7 +33,7 @@ def run_get_weight_check():
                     "containers": ["C-35434", "K-4109"],
                     "direction": "out",
                     "id": int,
-                    "neto": 3117,
+                    "neto": 3438,
                     "produce": "orange"
                 },
                 {
@@ -53,6 +53,67 @@ def run_get_weight_check():
                     "produce": "orange"
                 }
             ],
+            "status": 200
+        },
+        {
+            "payload": {
+                "from": from_time,
+                "to": to_time,
+                "filter": "in"
+            },
+            "expected": [
+                {
+                    "bruto": 16000,
+                    "containers": ["C-35434", "K-4109"],
+                    "direction": "in",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                },
+                {
+                    "bruto": 22222,
+                    "containers": ["C-35434", "cacacaca"],
+                    "direction": "in",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                },
+            ],
+            "status": 200
+        },
+        {
+            "payload": {
+                "from": from_time,
+                "to": to_time,
+                "filter": "out"
+            },
+            "expected": [
+                {
+                    "bruto": 16000,
+                    "containers": ["C-35434", "K-4109"],
+                    "direction": "out",
+                    "id": int,
+                    "neto": 3438,
+                    "produce": "orange"
+                },
+                {
+                    "bruto": 22222,
+                    "containers": ["C-35434", "cacacaca"],
+                    "direction": "out",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                }
+            ],
+            "status": 200
+        },
+        {
+            "payload": {
+                "from": 19990309084418,
+                "to": 19990309084418,
+                "filter": "in,out"
+            },
+            "expected": [],
             "status": 200
         }
     ]
@@ -115,10 +176,10 @@ def run_get_weight_check():
                 all_tests_passed = False
                 sys.exit(1)
 
+            if all_tests_passed:
+                print(f"✅ All tests passed successfully! : {payload}")
+
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
             sys.exit(1)
-
-    if all_tests_passed:
-        print("✅ All tests passed successfully!")

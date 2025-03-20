@@ -31,6 +31,7 @@ def clear_mysql_tables():
 if __name__ == "__main__":
     try:
         clear_mysql_tables()
+        
         # api test
         # get health check
         print('get health check')
