@@ -30,7 +30,8 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers):
 
     # Prepare transaction data
     now = datetime.now()
-    weight = convert_to_kg(data['weight'], data['unit'])
+    # we verified we have weight in data already
+    weight = convert_to_kg(data.get('weight'), data.get('unit', 'lbs'))
     unit = 'kg'
     produce = data.get('produce', 'na')
 
@@ -110,7 +111,11 @@ def handle_weight_out(cursor, connection, data, truck):
     """
     cursor.execute(find_entry_query, (truck,))
     entry_record = cursor.fetchone()
-    containers = json.loads(entry_record['containers'])
+    
+    # Validate entry record exists
+    if not entry_record:
+        return jsonify({"error": f"No entry record found for truck {truck}"}), 404
+    containers = json.loads(entry_record['containers']) if entry_record.get('containers') else []
 
     # Validate entry record exists
     if truck != 'na' and not entry_record:
@@ -128,7 +133,7 @@ def handle_weight_out(cursor, connection, data, truck):
             if not container_record:
                 total_container_tara = None
                 break
-            weight = convert_to_kg(container_record['weight'], container_record['unit'])
+            weight = convert_to_kg(container_record.get('weight',0), container_record.get('unit', 'kg'))
             total_container_tara += weight
 
     # Prepare out transaction
@@ -194,6 +199,7 @@ def handle_weight_out(cursor, connection, data, truck):
 
 
 def post_weight():
+    print("sup", flush=True)
     try:
         # Get JSON data from the request
         data = request.get_json()
@@ -205,10 +211,8 @@ def post_weight():
                 return jsonify({"error": f"Missing required field: {field}"}), 400
 
         # Normalize inputs
-        direction = data['direction'].lower()
+        direction = data.get('direction', 'na').lower()
         truck = data.get('truck', 'na')
-        # containers = data.get('containers', '').split(
-        #     ',') if data.get('containers') else []
         containers = data.get('containers', None)
 
         # Validate direction
