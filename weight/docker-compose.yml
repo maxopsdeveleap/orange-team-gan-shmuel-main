@@ -1,17 +1,4 @@
 services:
-  app:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      MYSQL_HOST: db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
-    volumes:
-      - ./in:/app/in
-    depends_on:
-      - db
-    restart: on-failure
 
   db:
     image: mysql:9
@@ -26,6 +13,32 @@ services:
     volumes:
       - weight:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
+    restart: on-failure
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+    volumes:
+      - ./in:/app/in
+    depends_on:
+      - db
+    restart: on-failure
+  
+  react:
+    build:
+      context: .
+      dockerfile: Dockerfile-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - app
     restart: on-failure
 
 volumes:
