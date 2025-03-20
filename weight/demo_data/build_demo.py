@@ -104,3 +104,4 @@ if __name__ == "__main__":
     clear_mysql_tables()
     post_batch_weight()
     process_trucks()
+    print("Insert demo data to database tables")
