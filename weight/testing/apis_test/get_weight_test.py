@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime, timedelta
+import sys
 
 
 def run_get_weight_check():
@@ -32,7 +33,7 @@ def run_get_weight_check():
                     "containers": ["C-35434", "K-4109"],
                     "direction": "out",
                     "id": int,
-                    "neto": 3117,
+                    "neto": 3438,
                     "produce": "orange"
                 },
                 {
@@ -53,6 +54,67 @@ def run_get_weight_check():
                 }
             ],
             "status": 200
+        },
+        {
+            "payload": {
+                "from": from_time,
+                "to": to_time,
+                "filter": "in"
+            },
+            "expected": [
+                {
+                    "bruto": 16000,
+                    "containers": ["C-35434", "K-4109"],
+                    "direction": "in",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                },
+                {
+                    "bruto": 22222,
+                    "containers": ["C-35434", "cacacaca"],
+                    "direction": "in",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                },
+            ],
+            "status": 200
+        },
+        {
+            "payload": {
+                "from": from_time,
+                "to": to_time,
+                "filter": "out"
+            },
+            "expected": [
+                {
+                    "bruto": 16000,
+                    "containers": ["C-35434", "K-4109"],
+                    "direction": "out",
+                    "id": int,
+                    "neto": 3438,
+                    "produce": "orange"
+                },
+                {
+                    "bruto": 22222,
+                    "containers": ["C-35434", "cacacaca"],
+                    "direction": "out",
+                    "id": int,
+                    "neto": None,
+                    "produce": "orange"
+                }
+            ],
+            "status": 200
+        },
+        {
+            "payload": {
+                "from": 19990309084418,
+                "to": 19990309084418,
+                "filter": "in,out"
+            },
+            "expected": [],
+            "status": 200
         }
     ]
 
@@ -69,12 +131,12 @@ def run_get_weight_check():
                 try:
                     response_json = res.json()
 
-                    # בדיקה אם הפלט הוא רשימה כמו הצפוי
                     if isinstance(response_json, list):
                         if len(response_json) > len(expected):
                             print(
                                 f"❌ Test Failed: Received more items than expected. Expected {len(expected)}, but got {len(response_json)}")
                             all_tests_passed = False
+                            sys.exit(1)
                             continue
 
                         for i, expected_item in enumerate(expected):
@@ -93,26 +155,31 @@ def run_get_weight_check():
 
                             if mismatches:
                                 print(
-                                    f"❌ Test Failed: Mismatched values {mismatches} for item {i}")
+                                    f"❌ Test Failed: Mismatched values \n res:{response_item} \n exp:{response_json} for item {i}")
                                 all_tests_passed = False
+                                sys.exit(1)
 
                     else:
                         print("❌ Test Failed: Response is not a list")
                         all_tests_passed = False
+                        sys.exit(1)
 
                 except json.JSONDecodeError:
                     print(
                         f"❌ Test Failed: Response is not valid JSON -> {res.text}")
                     all_tests_passed = False
+                    sys.exit(1)
 
             else:
                 print(
                     f"❌ Test Failed: Expected status {expected_status}, but got {res.status_code}")
                 all_tests_passed = False
+                sys.exit(1)
+
+            if all_tests_passed:
+                print(f"✅ All tests passed successfully! : {payload}")
 
         except requests.exceptions.RequestException as e:
             print(f"🚨 Test failed with exception: {e}")
             all_tests_passed = False
-
-    if all_tests_passed:
-        print("✅ All tests passed successfully!")
+            sys.exit(1)

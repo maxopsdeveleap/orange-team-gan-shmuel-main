@@ -9,7 +9,7 @@ services:
       MYSQL_PASSWORD: rootpassword
       MYSQL_PORT: 3306
     volumes:
-      - ./in:/in
+      - ./in:/billing/in
     depends_on:
       - db
     restart: on-failure
