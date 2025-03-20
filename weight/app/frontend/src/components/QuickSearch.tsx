@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import weightService, { ItemData } from '../api/WeightService';
+import { X } from "lucide-react"; 
 
 interface QuickSearchFormProps {
     onSuccess?: (data: any) => void;
@@ -39,12 +40,12 @@ const QuickSearch: React.FC<QuickSearchFormProps> = ({ onSuccess }) => {
           if (onSuccess) {
             onSuccess(response);
           }
-          
-            setId('');
-          
+                    
         } catch (err: any) {
+
           setError(err instanceof Error ? err.message : 'An error occurred while searching');
           console.error('search submission error:', err);
+
         } finally {
           setLoading(false);
         }
@@ -56,18 +57,37 @@ const QuickSearch: React.FC<QuickSearchFormProps> = ({ onSuccess }) => {
         <div>
             <h3>Search for item</h3>
       
-            {error && <div className="error-message">{error}</div>}
+            {error && error!=="Request failed with status code 404" && <div className="error-message">{error}</div>}
 
             <form onSubmit={handleSubmit}>
 
-              <div className="form-group">
-                  <input
-                      id="itemId"
-                      type="text"
-                      value={id}
-                      onChange={(e) => setId(e.target.value)}
-                      placeholder="Item id"
-                  />
+              <div className="form-group" style={{ position: "relative", display: "inline-block" }}>
+                <input
+                  id="itemId"
+                  type="text"
+                  value={id}
+                  onChange={(e) => setId(e.target.value)}
+                  placeholder="Item id"
+                  style={{ paddingRight: id ? "30px" : "10px" }}
+                />
+                {id && (
+                  <button
+                    type="button"
+                    onClick={() => setId('')}
+                    style={{
+                      position: "absolute",
+                      right: "5px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      color: "black"
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                )}
               </div>
 
               <div className="date-filters">
@@ -119,9 +139,11 @@ const QuickSearch: React.FC<QuickSearchFormProps> = ({ onSuccess }) => {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            ) : ""}
+
+            {error==="Request failed with status code 404"? (
               <div className="no-records">No data found</div>
-            )}
+            ): ""}
 
         </div>
         

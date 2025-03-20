@@ -1,4 +1,5 @@
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 // Set base URL for API - change this to your Flask backend URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -76,8 +77,8 @@ export const weightService = {
     filter?: string
   ) => {
     const params = new URLSearchParams();
-    if (from) params.append('from', from);
-    if (to) params.append('to', to);
+    if (from) params.append('from', dayjs(from).format('YYYYMMDDHHmmss'));
+    if (to) params.append('to', dayjs(to).format('YYYYMMDDHHmmss'));
     if (filter) params.append('filter', filter);
     
     const response = await api.get(`/weight?${params.toString()}`);
@@ -111,8 +112,8 @@ export const weightService = {
     to?: string
   ): Promise<ItemData> => {
     const params = new URLSearchParams();
-    if (from) params.append('from', from);
-    if (to) params.append('to', to);
+    if (from) params.append('from', dayjs(from).format('YYYYMMDDHHmmss'));
+    if (to) params.append('to', dayjs(to).format('YYYYMMDDHHmmss'));
     
     const response = await api.get(`/item/${id}?${params.toString()}`);
     return response.data;

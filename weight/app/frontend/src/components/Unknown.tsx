@@ -17,7 +17,6 @@ const Unknown: React.FC = () => {
 
             // Get count of unknown containers
             const unknownContainers = await weightService.getUnknownContainers();
-            console.log(unknownContainers);
             setUnknown(unknownContainers);
 
           } catch (error) {
