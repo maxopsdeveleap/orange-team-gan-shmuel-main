@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import weightService from '../api/WeightService';
+import { AxiosError } from 'axios';
 
 interface WeightFormProps {
   onSuccess?: (data: any) => void;
@@ -37,11 +38,14 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           produce: produce || 'na',
         }),
 
+        ...(direction !== "none" && {
+          force,
+          truck: truck || 'na',
+        }),
+
         direction,
-        truck: truck || 'na',
         weight: parseInt(weight, 10),
         unit,
-        force,
         
       };
 
@@ -62,10 +66,26 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
         setProduce('');
       }
       
-    } catch (err: any) {
-      setError(err instanceof Error ? err.message : 'An error occurred while recording weight');
+    } 
+
+    catch (err: any) {
+
+      if (err instanceof AxiosError){
+        setError(err.response?.data.error || err.message);
+      } 
+
+      else if(err instanceof Error){
+        setError(err.message);
+      } 
+      
+      else {
+        setError('An error occurred while recording weight');
+      }
+
       console.error('Weight submission error:', err);
-    } finally {
+    }
+
+    finally {
       setLoading(false);
     }
   };
@@ -92,17 +112,19 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="truck">Truck License:</label>
-          <input
-            id="truck"
-            type="text"
-            value={truck}
-            onChange={(e) => setTruck(e.target.value)}
-            placeholder="License number or 'na'"
-          />
-        </div>
-
+        {direction !== 'none' && (
+          <div className="form-group">
+            <label htmlFor="truck">Truck License:</label>
+            <input
+              id="truck"
+              type="text"
+              value={truck}
+              onChange={(e) => setTruck(e.target.value)}
+              placeholder="License number or 'na'"
+            />
+          </div>
+        )}
+        
         {direction !== 'out' && (
           <div className="form-group">
             <label htmlFor="containers">Containers:</label>
@@ -143,8 +165,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           </select>
         </div>
 
-        {direction !== 'out' && (
-
+        {direction === 'out' && (
             <div className="form-group">
               <label htmlFor="produce">Produce:</label>
               <input
@@ -158,16 +179,17 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
         )}
 
         
-
-        <div className="form-group checkbox">
-          <input
-            id="force"
-            type="checkbox"
-            checked={force}
-            onChange={(e) => setForce(e.target.checked)}
-          />
-          <label htmlFor="force">Force (Overwrite previous weighing if exists)</label>
-        </div>
+        {direction !== 'none' && (
+          <div className="form-group checkbox">
+            <input
+              id="force"
+              type="checkbox"
+              checked={force}
+              onChange={(e) => setForce(e.target.checked)}
+            />
+            <label htmlFor="force">Force (Overwrite previous weighing if exists)</label>
+          </div>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Submitting...' : 'Record Weight'}
