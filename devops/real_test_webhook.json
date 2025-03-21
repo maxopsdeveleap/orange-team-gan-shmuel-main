@@ -13,7 +13,7 @@
     "state": "closed",
     "locked": false,
     "title": "bug fix that need to fetch all data with the commits to use git show",
-    "user": {
+    "user": {    
       "login": "ShobashAndi",
       "id": 140307701,
       "node_id": "U_kgDOCFzs9Q",
