@@ -1,6 +1,20 @@
 services:
+  #frontend:
+  #  build:
+  #    context: .
+  #    dockerfile: Dockerfile.frontend
+  #  container_name: local_billing_frontend
+  #  ports:
+  #    - "8501:8501"
+  #  environment:
+  #    - API_BASE_URL=http://app:5000
+  #  depends_on:
+  #    - local_billing_app
+  #  restart: on-failure
+
   app:
     build: .
+    container_name: local_billing_app
     ports:
       - "5000:5000"
     environment:
@@ -16,7 +30,7 @@ services:
 
   db:
     image: mysql:9
-    container_name: billing_db
+    container_name: local_billing_db
     ports:
       - "3306:3306"
     environment:
