@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
             <div className="stat-card">
               <h3>Unknown Containers</h3>
               <div className="stat-value">{unknownCount}</div>
-              <Link to="/unknown" className="stat-link">View List</Link>
+              <Link to="/Dashboard/unknown" className="stat-link">View List</Link>
             </div>
           </div>
 

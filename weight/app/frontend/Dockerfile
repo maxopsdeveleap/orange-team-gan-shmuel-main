@@ -13,6 +13,10 @@ RUN npm install
 # Copy the rest of the app
 COPY . .
 
+# Accept `VITE_API_URL` from Docker Compose
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 # Build the app
 RUN npm run build
 

@@ -33,6 +33,8 @@ services:
   react:
     build:
       context: ./app/frontend
+      args:
+        - VITE_API_URL=http://localhost
     ports:
       - "80:80"
     depends_on:

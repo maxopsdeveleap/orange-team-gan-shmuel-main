@@ -164,7 +164,7 @@ const WeightRecords: React.FC = () => {
                       : 'None'}
                   </td>
                   <td>
-                    <a href={`/session/${record.session}`}>View Details</a>
+                    <a href={`/Dashboard/session/${record.session}`}>View Details</a>
                   </td>
                 </tr>
               ))}
