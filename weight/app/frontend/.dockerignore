@@ -1,0 +1,40 @@
+# Ignore node_modules (dependencies should be installed inside the container)
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Ignore local environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Ignore build cache & output
+dist
+.vite
+.vitepress
+.cache
+
+# Ignore logs & temp files
+*.log
+*.pid
+*.seed
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# Ignore Git-related files
+.git
+.gitignore
+
+# Ignore editor/project files
+.vscode
+.idea
+*.iml
+
+# Ignore Docker itself
+docker-compose.override.yml
+Dockerfile*
