@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import WeightForm from './components/WeightForm';
 import WeightRecords from './components/WeightRecords';
 import Dashboard from './components/Dashboard';
@@ -8,7 +8,6 @@ import './App.css';
 import Unknown from './components/Unknown';
 import BatchUpload from './components/BatchUpload';
 import Session from './components/Session';
-import DashboardLayout from './components/DashboardLayout';
 
 function App() {
   const [isHealthy, setIsHealthy] = useState(true);
@@ -45,27 +44,24 @@ function App() {
           
           <nav className="main-nav">
             <ul>
-              <li><Link to="/Dashboard">Dashboard</Link></li>
-              <li><Link to="/Dashboard/weight/new">New Weight</Link></li>
-              <li><Link to="/Dashboard/weights">Records</Link></li>
-              <li><Link to="/Dashboard/unknown">Unknown Containers</Link></li>
-              <li><Link to="/Dashboard/batch-upload">Batch Upload</Link></li>
+              <li><Link to="/">Dashboard</Link></li>
+              <li><Link to="/weight/new">New Weight</Link></li>
+              <li><Link to="/weights">Records</Link></li>
+              <li><Link to="/unknown">Unknown Containers</Link></li>
+              <li><Link to="/batch-upload">Batch Upload</Link></li>
             </ul>
           </nav>
         </header>
         
         <main className="app-content">
-        <Routes>
-        <Route path="/" element={<Navigate to="/Dashboard" replace />} />
-
-        <Route path="/Dashboard" element={<DashboardLayout />}>
-          <Route index element={<Dashboard />} /> {/* Default child route */}
-          <Route path="weight/new" element={<WeightForm />} />
-          <Route path="weights" element={<WeightRecords />} />
-          <Route path="unknown" element={<Unknown />} />
-          <Route path="batch-upload" element={<BatchUpload />} />
-          <Route path="session/:id" element={<Session />} />
-        </Route>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="weight/new" element={<WeightForm />} />
+        <Route path="weights" element={<WeightRecords />} />
+        <Route path="unknown" element={<Unknown />} />
+        <Route path="batch-upload" element={<BatchUpload />} />
+        <Route path="session/:id" element={<Session />} />
+        
       </Routes>
         </main>
         

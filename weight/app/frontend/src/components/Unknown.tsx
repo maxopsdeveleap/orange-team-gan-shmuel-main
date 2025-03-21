@@ -36,7 +36,7 @@ const Unknown: React.FC = () => {
     }, []);
 
     const handleNavigate = (container: string) => {
-        navigate('/Dashboard/weight/new', { 
+        navigate('/weight/new', { 
             state: {
                 direction: 'none', 
                 containers: container
