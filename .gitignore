@@ -26,3 +26,13 @@ secrets/
 # weight react frontend
 /weight/app/frontend/node_modules
 /weight/app/frontend/.vite
+
+*.key
+
+# Docker-related artifacts (cache, volumes, etc.)
+docker-compose.override.yml
+.docker/
+
+# Test reports and artifacts
+test-reports/
+coverage/
