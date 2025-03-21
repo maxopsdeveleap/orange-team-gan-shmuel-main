@@ -55,7 +55,7 @@ const QuickSearch: React.FC<QuickSearchFormProps> = ({ onSuccess }) => {
     return (
 
         <div>
-            <h3>Search for item</h3>
+            <h3>Search for Truck/Container</h3>
       
             {error && error!=="Request failed with status code 404" && <div className="error-message">{error}</div>}
 
@@ -67,7 +67,7 @@ const QuickSearch: React.FC<QuickSearchFormProps> = ({ onSuccess }) => {
                   type="text"
                   value={id}
                   onChange={(e) => setId(e.target.value)}
-                  placeholder="Item id"
+                  placeholder="Id"
                   style={{ paddingRight: id ? "30px" : "10px" }}
                 />
                 {id && (

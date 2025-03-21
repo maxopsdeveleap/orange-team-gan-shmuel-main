@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import weightService from '../api/WeightService';
+import { Link } from 'react-router-dom';
 
 interface WeightRecord {
   id: string;
@@ -164,7 +165,7 @@ const WeightRecords: React.FC = () => {
                       : 'None'}
                   </td>
                   <td>
-                    <a href={`/Dashboard/session/${record.session}`}>View Details</a>
+                    <Link to={`/Dashboard/session/${record.session}`}>View Details</Link>
                   </td>
                 </tr>
               ))}
