@@ -4,7 +4,7 @@ services:
     image: billing_app:latest
     container_name: billing_app
     ports:
-      - "5000:5000"
+      - "8082:5000"
     environment:
       MYSQL_HOST: billing_db
       MYSQL_USER: your_mysql_user
@@ -39,7 +39,7 @@ services:
     image: weight_app:latest
     container_name: weight_app
     ports:
-      - "5001:5000"
+      - "8081:5000"
     environment:
       MYSQL_HOST: weight_db
       MYSQL_USER: your_mysql_user

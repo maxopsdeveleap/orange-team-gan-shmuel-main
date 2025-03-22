@@ -20,11 +20,11 @@ app = Flask(__name__)
 
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 
-LOCAL_REPO_PATH = "/app"
+#LOCAL_REPO_PATH = "/app"
 
 #LOCAL_REPO_PATH = "/home/andishobash/Desktop/orange-team-gan-shmuel-main"
 
-#LOCAL_REPO_PATH = "/home/ubuntu/orange-team-gan-shmuel-main"
+LOCAL_REPO_PATH = "/home/ubuntu/orange-team-gan-shmuel-main"
 
 SERVICES = ["weight", "billing"]
 
