@@ -1,16 +1,16 @@
 services:
-  #frontend:
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile.frontend
-  #  container_name: local_billing_frontend
-  #  ports:
-  #    - "8501:8501"
-  #  environment:
-  #    - API_BASE_URL=http://app:5000
-  #  depends_on:
-  #    - local_billing_app
-  #  restart: on-failure
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: local_billing_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://app:5000
+    depends_on:
+      - app
+    restart: on-failure
 
   app:
     build: .
