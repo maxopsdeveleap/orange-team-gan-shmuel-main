@@ -12,7 +12,7 @@
     "number": 49,
     "state": "closed",
     "locked": false,
-    "title": "bug fix that need to fetch all data with the commits to use git show",
+    "title": "bug fix that need to fetch a    ll data with the commits to use git show",
     "user": {    
       "login": "ShobashAndi",
       "id": 140307701,
