@@ -33,6 +33,11 @@ services:
   react:
     build:
       context: ./app/frontend
+      args:
+        - VITE_API_URL=/api
+    environment:
+      - APP_NAME=app
+      - APP_PORT=5000
     ports:
       - "80:80"
     depends_on:

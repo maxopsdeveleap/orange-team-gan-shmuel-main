@@ -176,7 +176,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSuccess }) => {
           </select>
         </div>
 
-        {direction === 'out' && (
+        {direction === 'in' && (
             <div className="form-group">
               <label htmlFor="produce">Produce:</label>
               <input
