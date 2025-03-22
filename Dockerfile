@@ -1,33 +1,32 @@
-FROM python:3.10
+FROM python:3.13
 
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
-# Install system dependencies including Docker CLI
-
-RUN apt-get update && apt-get install -y \
-
-    curl \
-
-    docker.io 
-
-# Ensure Docker CLI is installed
-
-RUN docker --version
-
-# Copy and install Python dependencies
-
-COPY requirements.txt ./
-
+# Install dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
+# Install Git, Docker CLI, and Docker Compose
+RUN apt-get update && apt-get install -y \
+    git \
+    docker.io \
+    docker-compose \
+    && rm -rf /var/lib/apt/lists/*
+    
+# Clone the repository
+RUN git clone https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main /app/gan_shmuel
 
-COPY . .
+WORKDIR /app/gan_shmuel
 
-# Ensure correct permissions for Docker socket access
+# Set up environment variables
+ENV FLASK_APP=ci_pipeline.py
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=5050
 
-RUN usermod -aG docker root
+# Expose port
+EXPOSE 5050
 
-# Run Webhook Server
-
-CMD ["python", "devops/ci/webhook_server.py"]
+# Run the Flask application
+CMD ["python", "/app/gan_shmuel/devops/ci/webhook_server.py"]
