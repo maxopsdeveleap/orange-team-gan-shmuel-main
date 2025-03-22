@@ -21,6 +21,11 @@ build/
 # Secrets / credentials (if generated locally for testing)
 secrets/
 *.pem
+*.key
+
+# weight react frontend
+/weight/app/frontend/node_modules
+/weight/app/frontend/.vite
 
 *.key
 
