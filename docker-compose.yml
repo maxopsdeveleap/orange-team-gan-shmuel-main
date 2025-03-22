@@ -82,6 +82,18 @@ services:
     networks:
       - gan_shmuel
 
+  weight_frontend:
+    build:
+      context: ./weight/app/frontend
+    container_name: weight_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - weight_app
+    restart: on-failure
+    networks:
+      - gan_shmuel
+
 volumes:
   billing:
   weight:
