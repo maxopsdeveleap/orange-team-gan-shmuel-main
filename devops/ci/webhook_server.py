@@ -20,11 +20,11 @@ app = Flask(__name__)
 
 GIT_REPO = "https://github.com/maxopsdeveleap/orange-team-gan-shmuel-main"
 
-LOCAL_REPO_PATH = "/app"
+#LOCAL_REPO_PATH = "/app"
 
 #LOCAL_REPO_PATH = "/home/andishobash/Desktop/orange-team-gan-shmuel-main"
 
-#LOCAL_REPO_PATH = "/home/ubuntu/orange-team-gan-shmuel-main"
+LOCAL_REPO_PATH = "/home/ubuntu/orange-team-gan-shmuel-main"
 
 SERVICES = ["weight", "billing"]
 
@@ -236,6 +236,11 @@ def run_ci_pipeline(branch, github_username, developer_email):
 
     except subprocess.CalledProcessError as e:
         print(f"❌ CI pipeline failed: {str(e)}")
+        send_email(
+            subject=f"❌ CI Pipe line failed {branch} by {github_username}",
+            body=f"Tests failed in {service} during CI pipeline.\n\nError:\n{str(e)}",
+            receiver=developer_email
+        )
 
 
 
