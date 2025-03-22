@@ -34,6 +34,23 @@ services:
     networks:
       - gan_shmuel
 
+  weight_react:
+    build:
+      context: ./weight/app/frontend
+      args:
+        - VITE_API_URL=/api
+    container_name: weight_react
+    environment:
+      - APP_NAME=weight_app
+      - APP_PORT=5000
+    ports:
+      - "8083:80"
+    depends_on:
+      - weight_app
+    restart: on-failure
+    networks:
+      - gan_shmuel
+      
   weight_app:
     build: ./weight
     image: weight_app:latest

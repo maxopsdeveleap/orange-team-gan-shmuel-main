@@ -1,6 +1,7 @@
 services:
   app:
-    build: .
+    build:
+      context: .
     ports:
       - "5000:5000"
     environment:
@@ -26,6 +27,21 @@ services:
     volumes:
       - weight:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
+    restart: on-failure
+
+  
+  react:
+    build:
+      context: ./app/frontend
+      args:
+        - VITE_API_URL=/api
+    environment:
+      - APP_NAME=app
+      - APP_PORT=5000
+    ports:
+      - "80:80"
+    depends_on:
+      - app
     restart: on-failure
 
 volumes:
