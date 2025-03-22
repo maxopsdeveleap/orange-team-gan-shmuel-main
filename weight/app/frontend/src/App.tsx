@@ -54,16 +54,15 @@ function App() {
         </header>
         
         <main className="app-content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/weight/new" element={<WeightForm />} />
-            <Route path="/weights" element={<WeightRecords />} />
-            <Route path="/unknown" element={<Unknown />} />
-            <Route path="/batch-upload" element={<BatchUpload />} />
-            <Route path="/session/:id" element={<Session />} />
-            
-            {/* Other routes will be added as components are created */}
-          </Routes>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="weight/new" element={<WeightForm />} />
+        <Route path="weights" element={<WeightRecords />} />
+        <Route path="unknown" element={<Unknown />} />
+        <Route path="batch-upload" element={<BatchUpload />} />
+        <Route path="session/:id" element={<Session />} />
+        
+      </Routes>
         </main>
         
         <footer className="app-footer">

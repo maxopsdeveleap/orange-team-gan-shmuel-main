@@ -13,6 +13,10 @@ RUN npm install
 # Copy the rest of the app
 COPY . .
 
+# Accept `VITE_API_URL` from Docker Compose
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 # Build the app
 RUN npm run build
 
@@ -23,7 +27,8 @@ FROM nginx:alpine AS production
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Copy our custom Nginx config
-COPY nginx.conf /etc/nginx/conf.d/
+COPY nginx.template.conf /etc/nginx/nginx.template.conf
+COPY entrypoint.sh /entrypoint.sh
 
 # Set working directory in Nginx
 WORKDIR /usr/share/nginx/html
@@ -35,4 +40,4 @@ COPY --from=build /weight/app/dist .
 EXPOSE 80
 
 # Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
