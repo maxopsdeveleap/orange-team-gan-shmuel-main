@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orange Team - Gan Shmuel</title>
+    <style>
+        :root {
+            --bg-light: #f4f4f4;
+            --text-light: #333;
+            --bg-dark: #1e1e1e;
+            --text-dark: #ffffff;
+            --btn-weight-light: #ff9800;
+            --btn-billing-light: #4caf50;
+            --btn-weight-dark: #ffb74d;
+            --btn-billing-dark: #66bb6a;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 100px;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .weight-btn {
+            background-color: var(--btn-weight-light);
+            color: white;
+        }
+
+        .billing-btn {
+            background-color: var(--btn-billing-light);
+            color: white;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: transparent;
+            color: inherit;
+            border: 2px solid currentColor;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .weight-btn {
+            background-color: var(--btn-weight-dark);
+        }
+
+        body.dark-mode .billing-btn {
+            background-color: var(--btn-billing-dark);
+        }
+
+        body.dark-mode .toggle-btn {
+            border-color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <button class="toggle-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <h1>Orange Team - Gan Shmuel</h1>
+    
+    <img src="dashboard_icon_transparent.png" alt="Dashboard Logo" class="logo">
+
+    <div class="button-container">
+        <button class="weight-btn" onclick="window.location.href='http://localhost:80'">Weight</button>
+        <button class="billing-btn" onclick="window.location.href='http://localhost:8501'">Billing</button>
+    </div>
+
+    <script>
+        // Check system preference and apply dark mode if needed
+        function setThemeFromSystem() {
+            if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.body.classList.add("dark-mode");
+            }
+        }
+
+        // Toggle dark mode manually
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        // Apply theme based on system preference at load
+        setThemeFromSystem();
+    </script>
+
+</body>
+</html>
