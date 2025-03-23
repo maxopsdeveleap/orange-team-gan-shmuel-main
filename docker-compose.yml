@@ -1,4 +1,19 @@
 services:
+  billing_frontend:
+    build:
+      context: ./billing
+      dockerfile: Dockerfile.frontend
+    container_name: billing_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://billing_app:5000
+    depends_on:
+      - billing_app
+    restart: on-failure
+    networks:
+      - gan_shmuel
+  
   billing_app:
     build: ./billing
     container_name: billing_app
@@ -33,6 +48,23 @@ services:
     networks:
       - gan_shmuel
 
+  weight_frontend:
+    build:
+      context: ./weight/app/frontend
+      args:
+        - VITE_API_URL=/api
+    container_name: weight_frontend
+    environment:
+      - APP_NAME=weight_app
+      - APP_PORT=5000
+    ports:
+      - "80:80"
+    depends_on:
+      - weight_app
+    restart: on-failure
+    networks:
+      - gan_shmuel
+
   weight_app:
     build: ./weight
     container_name: weight_app
@@ -43,7 +75,7 @@ services:
       MYSQL_USER: your_mysql_user
       MYSQL_PASSWORD: your_mysql_password
     volumes:
-      - ./weight/in:/app/in
+      - ./weight/in:/weight/app/in
     depends_on:
       - weight_db
     restart: on-failure
