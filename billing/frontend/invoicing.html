@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoicing</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-6 shadow-lg">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Invoicing</h1>
+            <!-- Navigation Menu -->
+            <nav class="mt-4">
+                <ul class="flex space-x-4">
+                    <li><a href="index.html" class="text-white hover:text-gray-200">Home</a></li>
+                    <li><a href="providers.html" class="text-white hover:text-gray-200">Providers</a></li>
+                    <li><a href="trucks.html" class="text-white hover:text-gray-200">Trucks</a></li>
+                    <li><a href="rates.html" class="text-white hover:text-gray-200">Rates</a></li>
+                    <li><a href="invoicing.html" class="text-white hover:text-gray-200">Invoicing</a></li>
+                    <li><a href="system-tests.html" class="text-white hover:text-gray-200">System Tests</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <!-- Generate Invoice -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Generate Invoice</h2>
+            <form id="generate-invoice-form" class="space-y-4">
+                <div>
+                    <label for="provider-id-invoice" class="block text-sm font-medium text-gray-700">Provider ID</label>
+                    <input type="text" id="provider-id-invoice" name="provider-id-invoice" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="from-date" class="block text-sm font-medium text-gray-700">From Date</label>
+                    <input type="date" id="from-date" name="from-date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="to-date" class="block text-sm font-medium text-gray-700">To Date</label>
+                    <input type="date" id="to-date" name="to-date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Generate Invoice</button>
+            </form>
+            <div id="invoice-result" class="mt-4 space-y-2">
+                <!-- Invoice result will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Invoice History -->
+        <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+            <h2 class="text-xl font-semibold mb-4">Invoice History</h2>
+            <form id="invoice-history-form" class="space-y-4">
+                <div>
+                    <label for="provider-id-history" class="block text-sm font-medium text-gray-700">Provider ID</label>
+                    <input type="text" id="provider-id-history" name="provider-id-history" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">View History</button>
+            </form>
+            <div id="invoice-history-list" class="mt-4 space-y-2">
+                <!-- Invoice history will be displayed here -->
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/invoicing.js"></script>
+</body>
+</html>

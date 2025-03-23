@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trucks</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-6 shadow-lg">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Trucks</h1>
+            <!-- Navigation Menu -->
+            <nav class="mt-4">
+                <ul class="flex space-x-4">
+                    <li><a href="index.html" class="text-white hover:text-gray-200">Home</a></li>
+                    <li><a href="providers.html" class="text-white hover:text-gray-200">Providers</a></li>
+                    <li><a href="trucks.html" class="text-white hover:text-gray-200">Trucks</a></li>
+                    <li><a href="rates.html" class="text-white hover:text-gray-200">Rates</a></li>
+                    <li><a href="invoicing.html" class="text-white hover:text-gray-200">Invoicing</a></li>
+                    <li><a href="system-tests.html" class="text-white hover:text-gray-200">System Tests</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <!-- Truck List -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Truck List</h2>
+            <div id="trucks-list" class="space-y-2">
+                <!-- Trucks will be dynamically loaded here -->
+                <div class="text-gray-700">Loading trucks...</div>
+            </div>
+        </div>
+
+        <!-- Add Truck Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+            <h2 class="text-xl font-semibold mb-4">Add Truck</h2>
+            <form id="add-truck-form" class="space-y-4">
+                <div>
+                    <label for="truck-id" class="block text-sm font-medium text-gray-700">Truck ID</label>
+                    <input type="text" id="truck-id" name="truck-id" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="provider-id" class="block text-sm font-medium text-gray-700">Provider ID</label>
+                    <input type="text" id="provider-id" name="provider-id" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add Truck</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="scripts/trucks.js"></script>
+</body>
+</html>
