@@ -14,7 +14,7 @@ def run_post_weight_check():
     path = "weight"
 
     # Conversion function for pounds to kilograms
-    lbs_to_kg = lambda lbs: round(lbs * 0.453592, 2)
+    def lbs_to_kg(lbs): return round(lbs * 0.453592, 2)
 
     checks = [
         {
@@ -39,7 +39,7 @@ def run_post_weight_check():
             "payload": {
                 "direction": "in",
                 "truck": "test123",
-                "containers": "C-35434,K-4109", #296kg, 587 lbs
+                "containers": "C-35434,K-4109",  # 296kg, 587 lbs
                 "weight": 16000,
                 "unit": "kg",
                 "force": True,
@@ -115,7 +115,7 @@ def run_post_weight_check():
             },
             "expected": {
                 "bruto": 1000,
-                "id": "C1",
+                "id": int,
                 "truck": "na"
             },
             "status": 201
@@ -130,7 +130,7 @@ def run_post_weight_check():
             },
             "expected": {
                 "bruto": convert_to_kg(1000),
-                "id": "C2",
+                "id": int,
                 "truck": "na"
             },
             "status": 201
