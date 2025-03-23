@@ -2,7 +2,8 @@ from flask import request, jsonify
 from datetime import datetime
 import mysqlweight
 import json
-from utility import convert_to_kg 
+from utility import convert_to_kg
+
 
 def handle_weight_in(cursor, connection, data, direction, truck, containers):
     # Check for existing recent transaction for this truck/direction
@@ -53,20 +54,7 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers):
 
     # Handle different scenarios
     # Insert truck transaction
-    if truck != 'na':
-        query = """
-            INSERT INTO transactions
-            (datetime, direction, truck, containers, bruto, produce, session)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """
-        values = (now, direction, truck,
-                  json.dumps(containers.split(',')) if containers else None,
-                  weight, produce, session_id)
-        cursor.execute(query, values)
-        transaction_id = cursor.lastrowid
-
-    # Handle container registration logic for 'none' direction
-    elif direction == 'none':
+    if direction == 'none':
         if not containers:
             return jsonify({"error": "No containers specified for 'none' direction"}), 400
 
@@ -80,8 +68,20 @@ def handle_weight_in(cursor, connection, data, direction, truck, containers):
             ON DUPLICATE KEY UPDATE weight = %s, unit = %s
         """
         cursor.execute(container_query, (containers,
-                        weight, unit, weight, unit))
-        transaction_id = containers # name
+                                         weight, unit, weight, unit))
+
+    query = """
+            INSERT INTO transactions
+            (datetime, direction, truck, containers, bruto, produce, session)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+    values = (now, direction, truck,
+              json.dumps(containers.split(',')) if containers else None,
+              weight, produce, session_id)
+    cursor.execute(query, values)
+    transaction_id = cursor.lastrowid
+
+    # Handle container registration logic for 'none' direction
 
     connection.commit()
 
@@ -111,11 +111,12 @@ def handle_weight_out(cursor, connection, data, truck):
     """
     cursor.execute(find_entry_query, (truck,))
     entry_record = cursor.fetchone()
-    
+
     # Validate entry record exists
     if not entry_record:
         return jsonify({"error": f"No entry record found for truck {truck}"}), 404
-    containers = json.loads(entry_record['containers']) if entry_record.get('containers') else []
+    containers = json.loads(entry_record['containers']) if entry_record.get(
+        'containers') else []
 
     # Validate entry record exists
     if truck != 'na' and not entry_record:
@@ -133,7 +134,8 @@ def handle_weight_out(cursor, connection, data, truck):
             if not container_record:
                 total_container_tara = None
                 break
-            weight = convert_to_kg(container_record.get('weight',0), container_record.get('unit', 'kg'))
+            weight = convert_to_kg(container_record.get(
+                'weight', 0), container_record.get('unit', 'kg'))
             total_container_tara += weight
 
     # Prepare out transaction
