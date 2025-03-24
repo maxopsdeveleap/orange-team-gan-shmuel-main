@@ -14,9 +14,9 @@
     "locked": false,
     "title": "bug fix that need to fetch a    ll data with the commits to use git show",
     "user": {    
-      "login": "ShobashAndi",
+      "login": "ShobashAndi",      
       "id": 140307701,
-      "node_id": "U_kgDOCFzs9Q",    
+      "node_id": "U_kgDOCFzs9Q",         
       "avatar_url": "https://avatars.githubusercontent.com/u/140307701?v=4",
       "gravatar_id": "",   
       "url": "https://api.github.com/users/ShobashAndi",
@@ -33,13 +33,13 @@
       "type": "User",
       "user_view_type": "public",
       "site_admin": false                 
-    },    
+    },         
                                
-    "body": null,
+    "body": null,    
     "created_at": "2025-03-19T12:32:18Z",        
     "updated_at": "2025-03-19T12:42:27Z",   
-    "closed_at": "2025-03-19T12:42:27Z",
-    "merged_at": "2025-03-19T12:42:27Z",
+    "closed_at": "2025-03-19T12:42:27Z",    
+    "merged_at": "2025-03-19T12:42:27Z",   
     "merge_commit_sha": "0372d87126527c28497d23b685e40b4ebd27f556",
     "assignee": null,
     "assignees": [
